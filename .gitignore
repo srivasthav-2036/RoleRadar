@@ -1,0 +1,11 @@
+# Ignore virtual environments completely
+venv/
+env/
+ENV/
+
+# Ignore environment variables
+.env
+
+# Ignore any __pycache__ folder anywhere in the project tree
+**/__pycache__/
+*.py[cod]
