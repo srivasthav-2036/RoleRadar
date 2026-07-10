@@ -1,126 +1,302 @@
 [
-  "3m",
-  "abb",
-  "abbott",
-  "accenture",
-  "activision-blizzard",
-  "adobe",
-  "adventhealth",
-  "aig",
-  "air-products",
-  "airbus",
-  "alcoa",
-  "allstate",
-  "amadeus",
-  "american-electric-power",
-  "amgen",
-  "anthem",
-  "applied-materials",
-  "asml",
-  "att",
-  "autodesk",
-  "baker-hughes",
-  "bank-of-america",
-  "baxter",
-  "blackrock",
-  "boeing",
-  "bristol-myers-squibb",
-  "capital-one",
-  "cardinal-health",
-  "caterpillar",
-  "charles-schwab",
-  "chevron",
-  "cigna",
-  "cisco",
-  "citrix",
-  "clorox",
-  "comcast",
-  "conocophillips",
-  "cvs-health",
-  "danaher",
-  "dell-technologies",
-  "deloitte",
-  "delta-air-lines",
-  "disney",
-  "dow",
-  "duke-energy",
-  "dupont",
-  "edwards-lifesciences",
-  "eli-lilly",
-  "emerson",
-  "exelon",
-  "expedia",
-  "fedex",
-  "fidelity",
-  "ford",
-  "general-dynamics",
-  "general-motors",
-  "genentech",
-  "goldman-sachs",
-  "halliburton",
-  "hca-healthcare",
-  "honeywell",
-  "hp",
-  "ibm",
-  "intel",
-  "intuit",
-  "johnson-controls",
-  "johnson-and-johnson",
-  "jpmorgan-chase",
-  "kellogg",
-  "kimberly-clark",
-  "kraft-heinz",
-  "kroger",
-  "lockheed-martin",
-  "lowes",
-  "lululemon",
-  "marriott",
-  "mastercard",
-  "mckesson",
-  "merck",
-  "meta",
-  "micron",
-  "microsoft",
-  "mondelez",
-  "morgan-stanley",
-  "netflix",
-  "nike",
-  "nvidia",
-  "oracle",
-  "paypal",
-  "pepsico",
-  "pfizer",
-  "phillips66",
-  "pinterest",
-  "procter-and-gamble",
-  "qualcomm",
-  "raytheon",
-  "red-hat",
-  "salesforce",
-  "servicenow",
-  "shell",
-  "snowflake",
-  "southwest-airlines",
-  "splunk",
-  "starbucks",
-  "state-farm",
-  "stripe",
-  "target",
-  "tesla",
-  "texas-instruments",
-  "thermo-fisher",
-  "tmobile",
-  "uber",
-  "unilever",
-  "unitedhealth-group",
-  "us-bank",
-  "verizon",
-  "visa",
-  "vmware",
-  "walmart",
-  "wells-fargo",
-  "western-digital",
-  "workday",
-  "zoom",
-  "zscaler"
+  {
+    "company": "NVIDIA",
+    "url": "https://nvidia.wd5.myworkdayjobs.com/NVIDIAExternalCareerSite"
+  },
+  {
+    "company": "Tesla",
+    "url": "https://tesla.wd1.myworkdayjobs.com/TeslaCareers"
+  },
+  {
+    "company": "Adobe",
+    "url": "https://adobe.wd5.myworkdayjobs.com/external_experienced"
+  },
+  {
+    "company": "Salesforce",
+    "url": "https://salesforce.wd12.myworkdayjobs.com/External_Career_Site"
+  },
+  {
+    "company": "Dell Technologies",
+    "url": "https://dell.wd1.myworkdayjobs.com/External"
+  },
+  {
+    "company": "Target",
+    "url": "https://target.wd5.myworkdayjobs.com/TargetCareers"
+  },
+  {
+    "company": "Mastercard",
+    "url": "https://mastercard.wd1.myworkdayjobs.com/CorporateCareers"
+  },
+  {
+    "company": "General Motors",
+    "url": "https://generalmotors.wd5.myworkdayjobs.com/Careers_GM"
+  },
+  {
+    "company": "Workday",
+    "url": "https://workday.wd5.myworkdayjobs.com/Workday"
+  },
+  {
+    "company": "Walmart",
+    "url": "https://walmart.wd5.myworkdayjobs.com/WalmartExternal"
+  },
+  {
+    "company": "Qualcomm",
+    "url": "https://qualcomm.wd5.myworkdayjobs.com/External"
+  },
+  {
+    "company": "ServiceNow",
+    "url": "https://servicenow.wd5.myworkdayjobs.com/ServiceNow"
+  },
+  {
+    "company": "Western Digital",
+    "url": "https://wdc.wd5.myworkdayjobs.com/External"
+  },
+  {
+    "company": "Micron Technology",
+    "url": "https://micron.wd1.myworkdayjobs.com/External"
+  },
+  {
+    "company": "Thermo Fisher Scientific",
+    "url": "https://thermofisher.wd5.myworkdayjobs.com/Careers"
+  },
+  {
+    "company": "Carrier",
+    "url": "https://carrier.wd5.myworkdayjobs.com/External"
+  },
+  {
+    "company": "RTX",
+    "url": "https://rtx.wd5.myworkdayjobs.com/External"
+  },
+  {
+    "company": "Pratt & Whitney",
+    "url": "https://prattwhitney.wd5.myworkdayjobs.com/External"
+  },
+  {
+    "company": "Cummins",
+    "url": "https://cummins.wd5.myworkdayjobs.com/Careers"
+  },
+  {
+    "company": "KLA",
+    "url": "https://kla.wd1.myworkdayjobs.com/KLA"
+  },
+  {
+    "company": "Medtronic",
+    "url": "https://medtronic.wd1.myworkdayjobs.com/MedtronicCareers"
+  },
+  {
+    "company": "Vertex Pharmaceuticals",
+    "url": "https://vrtx.wd1.myworkdayjobs.com/Vertex"
+  },
+  {
+    "company": "Illumina",
+    "url": "https://illumina.wd1.myworkdayjobs.com/IlluminaCareers"
+  },
+  {
+    "company": "Rockwell Automation",
+    "url": "https://rockwellautomation.wd5.myworkdayjobs.com/ExternalCareers"
+  },
+  {
+    "company": "Synopsys",
+    "url": "https://synopsys.wd5.myworkdayjobs.com/Careers"
+  },
+  {
+    "company": "Accenture",
+    "url": "https://accenture.wd103.myworkdayjobs.com/Careers"
+  },
+  {
+    "company": "Abbott",
+    "url": "https://abbott.wd5.myworkdayjobs.com/abbottcareers"
+  },
+  {
+    "company": "Amgen",
+    "url": "https://amgen.wd1.myworkdayjobs.com/Careers"
+  },
+  {
+    "company": "Bank of America",
+    "url": "https://careers.bankofamerica.com/en-us"
+  },
+  {
+    "company": "Comcast",
+    "url": "https://comcast.wd5.myworkdayjobs.com/Comcast_Careers"
+  },
+  {
+    "company": "Merck",
+    "url": "https://merck.wd5.myworkdayjobs.com/External"
+  },
+  {
+    "company": "Nike",
+    "url": "https://nike.wd3.myworkdayjobs.com/Careers"
+  },
+  {
+    "company": "Pfizer",
+    "url": "https://pfizer.wd1.myworkdayjobs.com/PfizerCareers"
+  },
+  {
+    "company": "3M",
+    "url": "https://3m.wd1.myworkdayjobs.com/Search"
+  },
+  {
+    "company": "Alight Solutions",
+    "url": "https://alight.wd5.myworkdayjobs.com/Careers"
+  },
+  {
+    "company": "Baxter",
+    "url": "https://baxter.wd1.myworkdayjobs.com/BaxterCareers"
+  },
+  {
+    "company": "Becton Dickinson",
+    "url": "https://bd.wd1.myworkdayjobs.com/ExternalCareers"
+  },
+  {
+    "company": "Boston Scientific",
+    "url": "https://bostonscientific.wd5.myworkdayjobs.com/External"
+  },
+  {
+    "company": "Capital One",
+    "url": "https://capitalone.wd1.myworkdayjobs.com/Capital_One"
+  },
+  {
+    "company": "Corteva",
+    "url": "https://corteva.wd5.myworkdayjobs.com/External"
+  },
+  {
+    "company": "Dow",
+    "url": "https://dow.wd5.myworkdayjobs.com/ExternalCareers"
+  },
+  {
+    "company": "DuPont",
+    "url": "https://dupont.wd5.myworkdayjobs.com/ExternalCareers"
+  },
+  {
+    "company": "Elevance Health",
+    "url": "https://elevancehealth.wd1.myworkdayjobs.com/External"
+  },
+  {
+    "company": "Fiserv",
+    "url": "https://fiserv.wd5.myworkdayjobs.com/External"
+  },
+  {
+    "company": "Honeywell",
+    "url": "https://honeywell.wd5.myworkdayjobs.com/Careers"
+  },
+  {
+    "company": "Johnson Controls",
+    "url": "https://johnsoncontrols.wd5.myworkdayjobs.com/External"
+  },
+  {
+    "company": "Keysight Technologies",
+    "url": "https://keysight.wd5.myworkdayjobs.com/KeysightCareers"
+  },
+  {
+    "company": "Lowe's",
+    "url": "https://lowes.wd5.myworkdayjobs.com/External"
+  },
+  {
+    "company": "Marriott International",
+    "url": "https://marriott.wd5.myworkdayjobs.com/MarriottJobs"
+  },
+  {
+    "company": "McKesson",
+    "url": "https://mckesson.wd3.myworkdayjobs.com/External_Careers"
+  },
+  {
+    "company": "AbbVie",
+    "url": "https://abbvie.wd5.myworkdayjobs.com/External"
+  },
+  {
+    "company": "Air Products",
+    "url": "https://airproducts.wd3.myworkdayjobs.com/Careers"
+  },
+  {
+    "company": "Alcon",
+    "url": "https://alcon.wd5.myworkdayjobs.com/Careers"
+  },
+  {
+    "company": "Allegion",
+    "url": "https://allegion.wd5.myworkdayjobs.com/Careers"
+  },
+  {
+    "company": "Amadeus",
+    "url": "https://amadeus.wd502.myworkdayjobs.com/Careers"
+  },
+  {
+    "company": "Autodesk",
+    "url": "https://autodesk.wd1.myworkdayjobs.com/Ext"
+  },
+  {
+    "company": "Baker Hughes",
+    "url": "https://bakerhughes.wd5.myworkdayjobs.com/External"
+  },
+  {
+    "company": "Barclays",
+    "url": "https://barclays.wd3.myworkdayjobs.com/External_Career_Site"
+  },
+  {
+    "company": "Biogen",
+    "url": "https://biogen.wd5.myworkdayjobs.com/External"
+  },
+  {
+    "company": "BlackRock",
+    "url": "https://blackrock.wd1.myworkdayjobs.com/BlackRockCareers"
+  },
+  {
+    "company": "Blue Yonder",
+    "url": "https://blueyonder.wd5.myworkdayjobs.com/BlueYonderCareers"
+  },
+  {
+    "company": "Boehringer Ingelheim",
+    "url": "https://boehringeringelheim.wd3.myworkdayjobs.com/Careers"
+  },
+  {
+    "company": "Bristol Myers Squibb",
+    "url": "https://bms.wd1.myworkdayjobs.com/External"
+  },
+  {
+    "company": "Cadence Design Systems",
+    "url": "https://cadence.wd1.myworkdayjobs.com/Careers"
+  },
+  {
+    "company": "Caterpillar",
+    "url": "https://cat.wd5.myworkdayjobs.com/CaterpillarCareers"
+  },
+  {
+    "company": "Charles River Laboratories",
+    "url": "https://crl.wd1.myworkdayjobs.com/Careers"
+  },
+  {
+    "company": "Clorox",
+    "url": "https://clorox.wd5.myworkdayjobs.com/Careers"
+  },
+  {
+    "company": "CNH",
+    "url": "https://cnh.wd3.myworkdayjobs.com/CNHCareers"
+  },
+  {
+    "company": "Cognizant",
+    "url": "https://cognizant.wd5.myworkdayjobs.com/CognizantCareers"
+  },
+  {
+    "company": "Danaher",
+    "url": "https://danaher.wd1.myworkdayjobs.com/DanaherCareers"
+  },
+  {
+    "company": "Ecolab",
+    "url": "https://ecolab.wd5.myworkdayjobs.com/External"
+  },
+  {
+    "company": "Edwards Lifesciences",
+    "url": "https://edwards.wd5.myworkdayjobs.com/EdwardsCareers"
+  },
+  {
+    "company": "Ericsson",
+    "url": "https://ericsson.wd3.myworkdayjobs.com/External"
+  },
+  {
+    "company": "GE HealthCare",
+    "url": "https://gehealthcare.wd3.myworkdayjobs.com/External"
+  },
+  {
+    "company": "HPE",
+    "url": "https://hpe.wd5.myworkdayjobs.com/Jobs"
+  }
 ]

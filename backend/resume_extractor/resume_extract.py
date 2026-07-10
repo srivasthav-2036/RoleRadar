@@ -1,0 +1,141 @@
+import os
+import json
+import pdfplumber
+from google import genai
+
+
+def extract_pdf_text(pdf_path: str) -> str:
+    """Extract plain text from a PDF."""
+
+    text = ""
+
+    with pdfplumber.open(pdf_path) as pdf:
+        for page in pdf.pages:
+            page_text = page.extract_text()
+
+            if page_text:
+                text += page_text + "\n"
+
+    return text.strip()
+
+
+def extract_resume(pdf_path: str):
+    """
+    Returns:
+        resume_json (dict)
+        search_queries (list[str])
+    """
+
+    resume_text = extract_pdf_text(pdf_path)
+
+    prompt = f"""
+You are an expert ATS Resume Parser.
+
+Your task is to return ONLY valid JSON.
+
+No markdown.
+No explanation.
+No extra text.
+
+Return exactly this schema:
+
+{{
+    "resume": {{
+        "summary": "",
+
+        "skills": {{
+            "programming": [],
+            "frameworks": [],
+            "libraries": [],
+            "databases": [],
+            "cloud": [],
+            "tools": [],
+            "other": []
+        }},
+
+        "experience": [
+            {{
+                "company": "",
+                "role": "",
+                "duration": "",
+                "description": "",
+                "skills": []
+            }}
+        ],
+
+        "projects": [
+            {{
+                "title": "",
+                "description": "",
+                "technologies": [],
+                "domain": ""
+            }}
+        ],
+
+        "education": [
+            {{
+                "degree": "",
+                "college": "",
+                "cgpa": "",
+                "year": ""
+            }}
+        ],
+
+        "certifications": [],
+
+        "achievements": [],
+
+        "languages": [],
+
+        "preferred_roles": [],
+
+        "domains": [],
+
+        "keywords": []
+    }},
+
+    "queries": [
+        "query1",
+        "query2"
+    ]
+}}
+
+Generate 5 best diverse search queries suitable for searching jobs.
+Queries should be role-focused and based on given resume-text.
+Examples:
+- Python Developer
+- Backend Developer
+- AI Engineer
+- Machine Learning Engineer
+
+Resume/ resume-text:
+
+{resume_text}
+"""
+
+    response = client.models.generate_content(
+        model="gemini-2.5-flash",
+        contents=prompt,
+    )
+    data = response.text.strip()
+
+    if data.startswith("```"):
+        data = data.replace("```json", "").replace("```", "").strip()
+
+    parsed = json.loads(data)
+
+    resume_json = parsed["resume"]
+    search_queries = parsed["queries"]
+
+    return resume_json, search_queries
+
+
+# if __name__ == "__main__":
+
+#     resume, queries = extract_resume("resume.pdf")
+
+#     print("========== RESUME ==========")
+#     print(json.dumps(resume, indent=4))
+
+#     print("\n========== SEARCH QUERIES ==========")
+#     print(json.dumps(queries, indent=4))

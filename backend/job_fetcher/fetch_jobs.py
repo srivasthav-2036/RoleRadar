@@ -27,6 +27,8 @@ Usage:
 import re
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime
+from jd_processor.jd_parser import parse_job_description
+from jd_processor.jobs_tidb_storage import job_exists, store_job
 import sys
 import os
 
@@ -228,8 +230,24 @@ def fetch_all_jobs(query, location="India"):
     sorted_jobs = _sort_jobs_by_date(deduped_jobs)
 
     for job in sorted_jobs:
-        job["posted_at"] = _format_display_date(job.get("posted_at"))
 
+        job["posted_at"] = _format_display_date(job.get("posted_at"))
+        # # checking if job already exists in the database before storing it, 
+        # # if it exists, we skip storing it to avoid duplicates
+        # if job_exists(
+        #     job["job_id"],
+        #     job["company"],
+        #     job["title"],
+        # ):
+        #     continue
+        # # job not in database, we parse the job description and store it
+        # parsed = parse_job_description(
+        #     title=job["title"],
+        #     company=job["company"],
+        #     description=job.get("description"),
+        # )
+
+        # store_job(job, parsed)
 
     return sorted_jobs
 
