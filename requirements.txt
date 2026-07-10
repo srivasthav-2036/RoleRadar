@@ -6,3 +6,5 @@ sqlalchemy
 cryptography 
 pdfplumber
 google-genai
+jinja2 
+weasyprint

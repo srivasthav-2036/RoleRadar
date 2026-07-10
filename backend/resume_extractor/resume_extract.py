@@ -2,7 +2,9 @@ import os
 import json
 import pdfplumber
 from google import genai
-
+client = genai.Client(
+    api_key=os.getenv("GEMINI_API_KEY")
+)
 
 def extract_pdf_text(pdf_path: str) -> str:
     """Extract plain text from a PDF."""
@@ -28,22 +30,19 @@ def extract_resume(pdf_path: str):
 
     resume_text = extract_pdf_text(pdf_path)
 
-    prompt = f"""
-You are an expert ATS Resume Parser.
-
-Your task is to return ONLY valid JSON.
-
-No markdown.
-No explanation.
-No extra text.
-
-Return exactly this schema:
-
-{{
-    "resume": {{
+RESUME_SCHEMA = """{
+    "resume": {
+        "name": "",
+        "contact": {
+            "email": "",
+            "phone": "",
+            "location": "",
+            "linkedin": "",
+            "github": "",
+            "portfolio": ""
+        },
         "summary": "",
-
-        "skills": {{
+        "skills": {
             "programming": [],
             "frameworks": [],
             "libraries": [],
@@ -51,64 +50,47 @@ Return exactly this schema:
             "cloud": [],
             "tools": [],
             "other": []
-        }},
-
+        },
         "experience": [
-            {{
-                "company": "",
-                "role": "",
-                "duration": "",
-                "description": "",
-                "skills": []
-            }}
+            {"company": "", "role": "", "duration": "", "description": "", "skills": []}
         ],
-
         "projects": [
-            {{
-                "title": "",
-                "description": "",
-                "technologies": [],
-                "domain": ""
-            }}
+            {"title": "", "description": "", "technologies": [], "domain": ""}
         ],
-
         "education": [
-            {{
-                "degree": "",
-                "college": "",
-                "cgpa": "",
-                "year": ""
-            }}
+            {"degree": "", "college": "", "cgpa": "", "year": ""}
         ],
-
         "certifications": [],
-
         "achievements": [],
-
         "languages": [],
-
         "preferred_roles": [],
-
         "domains": [],
-
         "keywords": []
-    }},
+    },
+    "queries": ["query1", "query2"]
+}"""
 
-    "queries": [
-        "query1",
-        "query2"
-    ]
-}}
+def extract_resume(pdf_path: str):
+    resume_text = extract_pdf_text(pdf_path)
+
+    prompt = f"""
+You are an expert ATS Resume Parser.
+
+Return ONLY valid JSON. No markdown. No explanation.
+
+Return exactly this schema:
+
+{RESUME_SCHEMA}
 
 Generate 5 best diverse search queries suitable for searching jobs.
-Queries should be role-focused and based on given resume-text.
+Queries should be role-focused and based on the given resume text.
 Examples:
 - Python Developer
 - Backend Developer
 - AI Engineer
 - Machine Learning Engineer
 
-Resume/ resume-text:
+Resume text:
 
 {resume_text}
 """

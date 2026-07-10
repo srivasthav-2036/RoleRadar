@@ -213,7 +213,8 @@ def _sort_jobs_by_date(jobs):
 def fetch_all_jobs(query, location="India"):
     """
     Runs all providers concurrently, deduplicates the combined
-    results, sorts newest-first, and returns the final list.
+    results, sorts newest-first, parses + stores any new jobs, and
+    returns the final list.
     """
     print("=" * 60)
     print(f"Fetching '{query}' jobs from {len(PROVIDERS)} providers")
@@ -227,27 +228,26 @@ def fetch_all_jobs(query, location="India"):
     print(f"Total after dedup : {len(deduped_jobs)} (removed {removed} duplicates)")
 
     sorted_jobs = _sort_jobs_by_date(deduped_jobs)
-    sorted_jobs = _sort_jobs_by_date(deduped_jobs)
 
     for job in sorted_jobs:
-
         job["posted_at"] = _format_display_date(job.get("posted_at"))
-        # # checking if job already exists in the database before storing it, 
-        # # if it exists, we skip storing it to avoid duplicates
-        # if job_exists(
-        #     job["job_id"],
-        #     job["company"],
-        #     job["title"],
-        # ):
-        #     continue
-        # # job not in database, we parse the job description and store it
-        # parsed = parse_job_description(
-        #     title=job["title"],
-        #     company=job["company"],
-        #     description=job.get("description"),
-        # )
 
-        # store_job(job, parsed)
+        # skip storing if this job is already in the database
+        if job_exists(
+            job["id"],
+            job["company"],
+            job["title"],
+        ):
+            continue
+
+        # job not in database, parse the description and store it
+        parsed = parse_job_description(
+            title=job["title"],
+            company=job["company"],
+            description=job.get("description"),
+        )
+
+        store_job(job, parsed)
 
     return sorted_jobs
 

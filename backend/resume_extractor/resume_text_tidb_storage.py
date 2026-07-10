@@ -4,6 +4,7 @@ import uuid
 from sqlalchemy import text
 
 from backend.database.config import engine
+from backend.embedder.embeddings import generate_resume_embedding
 
 
 def store_resume(user_id: str, resume_json: dict, search_queries: list) -> str:
@@ -12,20 +13,30 @@ def store_resume(user_id: str, resume_json: dict, search_queries: list) -> str:
     """
 
     resume_id = str(uuid.uuid4())
-
+    embedding_text, embedding = generate_resume_embedding(
+        resume_json,
+        search_queries
+    )
+    name = resume_json.get("name", "")
     query = text("""
-        INSERT INTO resumes (
-            id,
-            user_id,
-            resume_data,
-            search_queries
-        )
-        VALUES (
-            :id,
-            :user_id,
-            :resume_data,
-            :search_queries
-        )
+    INSERT INTO resumes (
+        id,
+        user_id,
+        name,
+        resume_data,
+        search_queries,
+        embedding_text,
+        embedding
+    )
+    VALUES (
+        :id,
+        :user_id,
+        :name,
+        :resume_data,
+        :search_queries,
+        :embedding_text,
+        CAST(:embedding AS VECTOR)
+    )
     """)
 
     with engine.begin() as conn:
@@ -34,12 +45,25 @@ def store_resume(user_id: str, resume_json: dict, search_queries: list) -> str:
             {
                 "id": resume_id,
                 "user_id": user_id,
+                "name": name,
+
                 "resume_data": json.dumps(resume_json),
                 "search_queries": json.dumps(search_queries),
+
+                "embedding_text": embedding_text,
+                "embedding": json.dumps(embedding),
             },
         )
 
-    return resume_id
+def _maybe_json_loads(value):
+    """
+    JSON columns may come back as already-parsed Python objects or
+    as raw strings depending on the driver - handle both rather
+    than assuming.
+    """
+    if isinstance(value, (str, bytes)):
+        return json.loads(value)
+    return value
 
 
 def get_resume(user_id: str):
@@ -49,8 +73,11 @@ def get_resume(user_id: str):
 
     query = text("""
         SELECT
+            name,
             resume_data,
-            search_queries
+            search_queries,
+            embedding
+
         FROM resumes
         WHERE user_id = :user_id
         ORDER BY created_at DESC
@@ -64,8 +91,10 @@ def get_resume(user_id: str):
         return None
 
     return {
-        "resume": json.loads(row.resume_data),
-        "queries": json.loads(row.search_queries)
+        "name": row.name,
+        "resume": _maybe_json_loads(row.resume_data),
+        "queries": _maybe_json_loads(row.search_queries),
+        "embedding": _maybe_json_loads(row.embedding),
     }
 
 
@@ -73,12 +102,19 @@ def update_resume(user_id: str, resume_json: dict, search_queries: list):
     """
     Update the latest resume for a user.
     """
-
+    embedding_text, embedding = generate_resume_embedding(
+        resume_json,
+        search_queries
+        )
+    name = resume_json.get("name", "")
     query = text("""
         UPDATE resumes
         SET
+            name = :name,
             resume_data = :resume_data,
-            search_queries = :search_queries
+            search_queries = :search_queries,
+            embedding_text = :embedding_text,
+            embedding = CAST(:embedding AS VECTOR)
         WHERE user_id = :user_id
     """)
 
@@ -87,8 +123,13 @@ def update_resume(user_id: str, resume_json: dict, search_queries: list):
             query,
             {
                 "user_id": user_id,
+                "name": name,
+
                 "resume_data": json.dumps(resume_json),
                 "search_queries": json.dumps(search_queries),
+
+                "embedding_text": embedding_text,
+                "embedding": json.dumps(embedding),
             },
         )
 
