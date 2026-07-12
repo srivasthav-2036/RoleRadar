@@ -2,11 +2,14 @@
 fetch_context.py
 
 Pulls together everything tailor_resume.py needs for one tailoring
-request: the user's resume, the target job, and (if this job was
-previously recommended to the user) the match_details Gemini already
-computed - missing_skills, matched_skills, recommendation blurb - so
-tailoring has strong signal on what to emphasize without re-deriving
-it from scratch.
+request: the user's resume, the target job, and the recommendation
+row that connects them.
+
+IMPORTANT: tailoring is only allowed for jobs that were actually
+recommended to this user. get_recommendation() is the gate - if no
+recommendation row exists for (user_id, job_id), tailoring is
+refused. This prevents tailoring against arbitrary jobs from the
+jobs table that this user was never matched with.
 """
 
 import json
@@ -27,12 +30,6 @@ def get_job(job_id: str):
     """
     Fetch a single job's title, company, and job_text (unpacked)
     by job_id. Returns None if not found.
-
-    NOTE: job_id is not unique on the jobs table (no PK on it - dupes
-    across providers are expected), so if duplicates exist this
-    returns whichever row TiDB returns first. Fine for tailoring
-    purposes since duplicates are the same posting from different
-    providers.
     """
     query = text("""
         SELECT job_id, title, company, job_text
@@ -71,18 +68,18 @@ def get_job(job_id: str):
     }
 
 
-def get_match_details(user_id: str, job_id: str):
+def get_recommendation(user_id: str, job_id: str):
     """
-    Fetch match_details for this user+job if it was previously
-    recommended. Returns None if no recommendation exists - tailoring
-    still works without it, just with less signal.
+    Fetch the full recommendation row for this user+job. Returns
+    None if this job was never recommended to this user - callers
+    MUST treat None as "tailoring not allowed", not just "no extra
+    context available".
 
-    NOTE: recommendations has a UNIQUE KEY on (user_id, job_id), so
-    there can only ever be one row per user+job - no ORDER BY/LIMIT
-    needed to disambiguate.
+    recommendations has a UNIQUE KEY on (user_id, job_id), so there
+    can only ever be one row.
     """
     query = text("""
-        SELECT match_details
+        SELECT recommendation_id, score, match_details, tailored_resume
         FROM recommendations
         WHERE user_id = :user_id AND job_id = :job_id
     """)
@@ -92,10 +89,15 @@ def get_match_details(user_id: str, job_id: str):
             query, {"user_id": user_id, "job_id": job_id}
         ).fetchone()
 
-    if row is None or row.match_details is None:
+    if row is None:
         return None
 
-    return _maybe_json_loads(row.match_details)
+    return {
+        "recommendation_id": row.recommendation_id,
+        "score": row.score,
+        "match_details": _maybe_json_loads(row.match_details),
+        "tailored_resume": _maybe_json_loads(row.tailored_resume),
+    }
 
 
 def build_tailoring_context(user_id: str, job_id: str):
@@ -106,21 +108,30 @@ def build_tailoring_context(user_id: str, job_id: str):
             "job": <job dict from get_job>,
             "match_details": <dict or None>,
         }
-    Raises ValueError if resume or job cannot be found - tailoring
-    cannot proceed without both.
+
+    Raises ValueError if:
+        - resume not found
+        - this job was never recommended to this user (the gate)
+        - job not found in jobs table (shouldn't happen if the
+          recommendation row exists, but checked anyway)
     """
     resume_data = get_resume(user_id)
     if resume_data is None:
         raise ValueError(f"No resume found for user_id={user_id}")
 
+    recommendation = get_recommendation(user_id, job_id)
+    if recommendation is None:
+        raise ValueError(
+            f"Job {job_id} was not recommended to user {user_id} - "
+            "tailoring is only available for recommended jobs."
+        )
+
     job = get_job(job_id)
     if job is None:
         raise ValueError(f"No job found for job_id={job_id}")
 
-    match_details = get_match_details(user_id, job_id)
-
     return {
         "resume": resume_data["resume"],
         "job": job,
-        "match_details": match_details,
+        "match_details": recommendation["match_details"],
     }

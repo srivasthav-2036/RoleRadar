@@ -126,7 +126,7 @@ import re
 from datetime import datetime, timezone
 
 import requests
-from job_fetcher.config import RAPIDAPI_KEY
+from backend.job_fetcher.config import RAPIDAPI_KEY
 
 BASE_URL = "https://jsearch.p.rapidapi.com/search-v2"
 

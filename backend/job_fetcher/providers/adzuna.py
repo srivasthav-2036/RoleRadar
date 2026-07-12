@@ -297,7 +297,7 @@ from datetime import datetime
 
 import requests
 
-from job_fetcher.config import (
+from backend.job_fetcher.config import (
     ADZUNA_APP_ID,
     ADZUNA_API_KEY,
     COMMON_HEADERS,

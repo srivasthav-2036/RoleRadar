@@ -1,5 +1,5 @@
-from similarity_engine.scoring import calculate_score
-from similarity_engine.matcher import semantic_match
+from backend.similarity_engine.scoring import calculate_score
+from backend.similarity_engine.matcher import semantic_match
 
 
 def match_resume_to_job(

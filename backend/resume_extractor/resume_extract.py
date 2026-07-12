@@ -2,9 +2,13 @@ import os
 import json
 import pdfplumber
 from google import genai
+
+from backend.resume_tailoring.resume_schema import RESUME_SCHEMA, SKILLS_CATEGORY_INSTRUCTIONS
+
 client = genai.Client(
-    api_key=os.getenv("GEMINI_API_KEY")
+    api_key=os.getenv("GEMINI_API_KEY_FOR_EXTRACTION")
 )
+
 
 def extract_pdf_text(pdf_path: str) -> str:
     """Extract plain text from a PDF."""
@@ -24,63 +28,25 @@ def extract_pdf_text(pdf_path: str) -> str:
 def extract_resume(pdf_path: str):
     """
     Returns:
-        resume_json (dict)
+        resume_json (dict) - matches resume_tailoring.resume_schema.RESUME_SCHEMA
         search_queries (list[str])
     """
 
     resume_text = extract_pdf_text(pdf_path)
 
-RESUME_SCHEMA = """{
-    "resume": {
-        "name": "",
-        "contact": {
-            "email": "",
-            "phone": "",
-            "location": "",
-            "linkedin": "",
-            "github": "",
-            "portfolio": ""
-        },
-        "summary": "",
-        "skills": {
-            "programming": [],
-            "frameworks": [],
-            "libraries": [],
-            "databases": [],
-            "cloud": [],
-            "tools": [],
-            "other": []
-        },
-        "experience": [
-            {"company": "", "role": "", "duration": "", "description": "", "skills": []}
-        ],
-        "projects": [
-            {"title": "", "description": "", "technologies": [], "domain": ""}
-        ],
-        "education": [
-            {"degree": "", "college": "", "cgpa": "", "year": ""}
-        ],
-        "certifications": [],
-        "achievements": [],
-        "languages": [],
-        "preferred_roles": [],
-        "domains": [],
-        "keywords": []
-    },
-    "queries": ["query1", "query2"]
-}"""
-
-def extract_resume(pdf_path: str):
-    resume_text = extract_pdf_text(pdf_path)
-
     prompt = f"""
 You are an expert ATS Resume Parser.
 
-Return ONLY valid JSON. No markdown. No explanation.
+Return ONLY valid JSON. No markdown. No explanation. No extra text.
 
 Return exactly this schema:
 
-{RESUME_SCHEMA}
+{{
+    "resume": {RESUME_SCHEMA},
+    "queries": ["query1", "query2"]
+}}
+
+{SKILLS_CATEGORY_INSTRUCTIONS}
 
 Generate 5 best diverse search queries suitable for searching jobs.
 Queries should be role-focused and based on the given resume text.

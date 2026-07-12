@@ -103,7 +103,7 @@
     {% for category, items in resume.skills.items() %}
         {% if items %}
         <div class="skill-row">
-            <span class="skill-category">{{ category|capitalize }}:</span>
+            <span class="skill-category">{{ category.replace('_', ' ')|title }}:</span>
             {{ items|join(', ') }}
         </div>
         {% endif %}

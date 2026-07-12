@@ -1,0 +1,31 @@
+name: RoleRadar Daily Cleanup
+
+on:
+  schedule:
+    - cron: "0 2 * * *"   # once a day, 2 AM UTC
+  workflow_dispatch: {}
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        working-directory: backend
+        run: pip install -r requirements.txt
+
+      - name: Run cleanup
+        working-directory: backend
+        env:
+          TIDB_USER: ${{ secrets.TIDB_USER }}
+          TIDB_PASSWORD: ${{ secrets.TIDB_PASSWORD }}
+          TIDB_HOST: ${{ secrets.TIDB_HOST }}
+          TIDB_PORT: ${{ secrets.TIDB_PORT }}
+          TIDB_DATABASE: ${{ secrets.TIDB_DATABASE }}
+          TIDB_CA: certs/isrgrootx1.pem
+        run: python -m maintenance.cleanup_old_jobs

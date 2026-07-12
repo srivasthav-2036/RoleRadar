@@ -4,9 +4,21 @@ tailor_resume.py
 Uses Gemini to tailor a resume to a specific job. Hard constraint:
 never invent experience, projects, skills, or achievements - only
 reorder, reword, and optimize keyword usage within what's already
-there. Returns JSON in the EXACT same schema as the input resume so
-nothing downstream (PDF template, frontend editor) needs to branch
-on shape.
+there.
+
+Two-layer safety on the output shape:
+    1. The prompt now includes the EXACT target schema (shared with
+       resume_extract.py via resume_tailoring/resume_schema.py),
+       instead of just saying "same shape as input" - Gemini is told
+       precisely what keys and structure to return.
+    2. validate_resume_shape() checks the result actually has all
+       required top-level keys before it's trusted downstream.
+
+Caching: get_or_generate_tailored_resume() is the entry point the
+API/frontend should call. It checks recommendations.tailored_resume
+first - if already generated, returns the cached JSON with zero
+Gemini calls. Only generates (and then saves) if nothing is cached
+yet.
 """
 
 import json
@@ -15,7 +27,16 @@ import os
 from dotenv import load_dotenv
 from google import genai
 
-from resume_tailoring.fetch_context import build_tailoring_context
+from backend.resume_tailoring.resume_schema import (
+    RESUME_SCHEMA,
+    SKILLS_CATEGORY_INSTRUCTIONS,
+    validate_resume_shape,
+)
+from backend.resume_tailoring.fetch_context import (
+    build_tailoring_context,
+    get_recommendation,
+)
+from backend.recommender.recommendation_storage import save_tailored_resume
 
 load_dotenv()
 
@@ -23,7 +44,7 @@ client = genai.Client(
     api_key=os.getenv("GEMINI_API_KEY_FOR_TAILORING")
 )
 
-TAILOR_PROMPT = """
+TAILOR_PROMPT = f"""
 You are an expert resume tailoring assistant for RoleRadar.
 
 You will be given:
@@ -51,16 +72,21 @@ STRICT RULES
 - Do NOT change factual fields: company names, dates/duration,
   degree, college, cgpa, year, contact info.
 - Return ONLY valid JSON, no markdown, no explanation.
-- Return the resume in EXACTLY this same shape as the input resume
-  JSON - same top-level keys, same nested structure. Do not add or
-  remove keys.
+
+{SKILLS_CATEGORY_INSTRUCTIONS}
 
 ==========================
-OUTPUT
+REQUIRED OUTPUT SCHEMA
 ==========================
 
-Return ONLY the tailored resume JSON (same schema as input resume).
-Do not wrap it in another object, do not add commentary.
+Return EXACTLY this schema - same top-level keys, same nesting
+(except "skills", whose category names are dynamic - see above).
+Every top-level key must be present even if empty ("" or []):
+
+{RESUME_SCHEMA}
+
+Do not wrap this in another object. Do not add commentary. Return
+only the JSON above, filled in with tailored content.
 """
 
 
@@ -84,17 +110,11 @@ def _extract_json(text: str) -> dict:
     return json.loads(text[start:end + 1])
 
 
-def generate_tailored_resume(user_id: str, job_id: str) -> dict:
+def _generate_tailored_resume(user_id: str, job_id: str) -> dict:
     """
-    Returns:
-        {
-            "tailored_resume": <resume JSON, same schema as original>,
-            "job": <job dict, for the PDF header/context>,
-        }
-
-    This is the "editable preview" step - the frontend should show
-    tailored_resume to the user for review/edits BEFORE calling
-    pdf_generator.py.
+    Always calls Gemini - no caching here. Use
+    get_or_generate_tailored_resume() instead unless you specifically
+    need to force a fresh generation.
     """
     context = build_tailoring_context(user_id, job_id)
 
@@ -116,7 +136,45 @@ Match Details (may be null if not previously analyzed):
 
     tailored_resume = _extract_json(response.text)
 
-    return {
-        "tailored_resume": tailored_resume,
-        "job": context["job"],
-    }
+    missing_keys = validate_resume_shape(tailored_resume)
+    if missing_keys:
+        raise ValueError(
+            f"Tailored resume is missing required keys: {missing_keys}. "
+            "Gemini did not follow the required schema."
+        )
+
+    return tailored_resume
+
+
+def get_or_generate_tailored_resume(user_id: str, job_id: str) -> dict:
+    """
+    The entry point the app/API should call when a user clicks
+    "Get Tailored Resume".
+
+    1. Confirms this job was actually recommended to this user (via
+       get_recommendation - raises ValueError if not).
+    2. If a tailored_resume is already cached on that recommendation
+       row, returns it directly - no Gemini call.
+    3. Otherwise generates it, saves it to recommendations.tailored_resume,
+       and returns it.
+    """
+    recommendation = get_recommendation(user_id, job_id)
+
+    if recommendation is None:
+        raise ValueError(
+            f"Job {job_id} was not recommended to user {user_id} - "
+            "tailoring is only available for recommended jobs."
+        )
+
+    if recommendation["tailored_resume"] is not None:
+        return recommendation["tailored_resume"]
+
+    tailored_resume = _generate_tailored_resume(user_id, job_id)
+
+    save_tailored_resume(
+        user_id=user_id,
+        job_id=job_id,
+        tailored_resume=tailored_resume,
+    )
+
+    return tailored_resume

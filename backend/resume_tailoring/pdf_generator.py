@@ -31,3 +31,12 @@ def generate_resume_pdf(tailored_resume: dict, output_path: str) -> str:
     HTML(string=html_content, base_url=TEMPLATE_DIR).write_pdf(output_path)
 
     return output_path
+
+def render_resume_html(tailored_resume: dict) -> str:
+    """
+    Renders tailored_resume into HTML using the same template as the
+    PDF, without converting to PDF - used for an in-browser preview
+    before the user commits to downloading.
+    """
+    template = _env.get_template("template.html")
+    return template.render(resume=tailored_resume)

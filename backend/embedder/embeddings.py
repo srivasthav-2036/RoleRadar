@@ -8,7 +8,7 @@ from google.genai import types
 load_dotenv()
 
 client = genai.Client(
-    api_key=os.getenv("GEMINI_API_KEY")
+    api_key=os.getenv("GEMINI_API_KEY_FOR_EMBEDDINGS")
 )
 
 EMBEDDING_MODEL = "gemini-embedding-001"
