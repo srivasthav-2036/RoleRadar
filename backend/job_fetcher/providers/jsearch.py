@@ -247,7 +247,7 @@ def fetch_jobs(query, country="in", max_pages=100, sort_by_date=True):
 
     while page <= max_pages:
 
-        print(f"\nFetching Page {page}")
+        # print(f"\nFetching Page {page}")
 
         params = {
             "query": query,
@@ -267,7 +267,7 @@ def fetch_jobs(query, country="in", max_pages=100, sort_by_date=True):
                 timeout=30,
             )
 
-            print(f"Status Code: {response.status_code}")
+            # print(f"Status Code: {response.status_code}")
             response.raise_for_status()
 
             result = response.json()
@@ -278,7 +278,7 @@ def fetch_jobs(query, country="in", max_pages=100, sort_by_date=True):
             print(f"Found {len(jobs)} jobs")
 
             if not jobs:
-                print("No more jobs.")
+                # print("No more jobs.")
                 break
 
             raw_jobs.extend(jobs)
@@ -286,17 +286,17 @@ def fetch_jobs(query, country="in", max_pages=100, sort_by_date=True):
             cursor = data.get("cursor")
 
             if not cursor:
-                print("No next cursor. Finished.")
+                # print("No next cursor. Finished.")
                 break
 
             page += 1
 
         except requests.exceptions.HTTPError:
-            print(response.text)
+            # print(response.text)
             break
 
         except Exception as e:
-            print(f"Error: {e}")
+            # print(f"Error: {e}")
             break
 
     if sort_by_date:

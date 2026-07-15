@@ -37,7 +37,7 @@ RESUME_SCHEMA = """{
         {"title": "", "description": "", "technologies": [], "domain": ""}
     ],
     "education": [
-        {"degree": "", "college": "", "cgpa": "", "year": ""}
+        {"degree": "", "college": "", "cgpa": "", "percentage": "", "year": ""}
     ],
     "certifications": [],
     "achievements": [],
@@ -56,6 +56,19 @@ this candidate): "programming_languages", "ai_ml", "backend",
 "frontend", "cloud_devops", "databases", "mobile", "data_engineering",
 "tools". Use snake_case for category names. Do not invent categories
 with no skills in them - omit empty categories entirely.
+"""
+
+EDUCATION_GRADE_INSTRUCTIONS = """
+For "education" entries, distinguish CGPA from PERCENTAGE - they are
+different grading systems and must not be mixed up:
+- "cgpa": use ONLY if the source expresses the grade on a scale (e.g.
+  "9.25/10", "3.8/4.0"). Leave empty ("") if not applicable.
+- "percentage": use ONLY if the source expresses the grade as a
+  percentage (e.g. "98.8%"). Leave empty ("") if not applicable.
+A candidate may legitimately have CGPA for one degree and percentage
+for another (e.g. college uses CGPA, high school uses percentage) -
+handle each education entry independently. NEVER put a percentage
+value into the "cgpa" field or vice versa.
 """
 
 # Used to validate Gemini's output actually has the right shape.

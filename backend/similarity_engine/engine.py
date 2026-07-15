@@ -30,7 +30,7 @@ def match_resume_to_job(
             job_profile=job_profile,
             match_result=match_result,
         )
-
+        print("Final Result:", final_result)
         return final_result
 
     except Exception as e:

@@ -218,7 +218,7 @@ def _fetch_company(company_entry, role=None, fetch_descriptions=True, max_result
             response = requests.post(search_url, headers=HEADERS, json=payload, timeout=30)
 
             if response.status_code != 200:
-                print(f"Skipped ({response.status_code})")
+                # print(f"Skipped ({response.status_code})")
                 break
 
             data = response.json()
@@ -229,7 +229,7 @@ def _fetch_company(company_entry, role=None, fetch_descriptions=True, max_result
                 break
 
             total_fetched += len(postings)
-            print(f"Fetched {len(postings)} jobs ({total_fetched} of {total} total)")
+            # print(f"Fetched {len(postings)} jobs ({total_fetched} of {total} total)")
 
             for job in postings:
 
@@ -263,7 +263,7 @@ def _fetch_company(company_entry, role=None, fetch_descriptions=True, max_result
                 break
 
             if total_fetched >= max_results:
-                print(f"Hit max_results cap ({max_results}) - stopping pagination")
+                # print(f"Hit max_results cap ({max_results}) - stopping pagination")
                 break
 
         except Exception as e:
@@ -288,15 +288,15 @@ def fetch_jobs(role=None, sort_by_date=True, fetch_descriptions=True, max_result
 
     raw_matches = []  # (job, company, description, posted_at_iso, job_type, job_req_id, apply_url)
 
-    print(f"\nCompanies to scan : {len(companies)}")
+    # print(f"\nCompanies to scan : {len(companies)}")
 
     for index, company_entry in enumerate(companies, start=1):
 
-        print(f"\n[{index}/{len(companies)}] {company_entry['company']}")
+        # print(f"\n[{index}/{len(companies)}] {company_entry['company']}")
 
         company, matches = _fetch_company(company_entry, role, fetch_descriptions, max_results)
 
-        print(f"Matched : {len(matches)}")
+        # print(f"Matched : {len(matches)}")
 
         for job, description, posted_at_iso, job_type, job_req_id, apply_url in matches:
             raw_matches.append(

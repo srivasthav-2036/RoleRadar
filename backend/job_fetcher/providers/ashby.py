@@ -421,11 +421,11 @@ def fetch_jobs(role=None, sort_by_date=True, fetch_descriptions=True):
     raw_matches = []  # (raw_job, company, description, apply_url) pre-normalization,
                        # so we can still sort on the original publishedDate value
 
-    print(f"\nCompanies to scan : {len(companies)}")
+    # print(f"\nCompanies to scan : {len(companies)}")
 
     for index, company in enumerate(companies, start=1):
 
-        print(f"\n[{index}/{len(companies)}] {company}")
+        # print(f"\n[{index}/{len(companies)}] {company}")
 
         payload = {
             "operationName": "ApiJobBoardWithTeams",
@@ -445,7 +445,7 @@ def fetch_jobs(role=None, sort_by_date=True, fetch_descriptions=True):
             )
 
             if response.status_code != 200:
-                print(f"Skipped ({response.status_code})")
+                # print(f"Skipped ({response.status_code})")
                 continue
 
             data = response.json()
@@ -453,7 +453,7 @@ def fetch_jobs(role=None, sort_by_date=True, fetch_descriptions=True):
             job_board = data.get("data", {}).get("jobBoard")
 
             if not job_board:
-                print("No jobs found")
+                # print("No jobs found")
                 continue
 
             jobs = job_board.get("jobPostings", [])

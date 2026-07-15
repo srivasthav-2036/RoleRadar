@@ -6,6 +6,7 @@ sqlalchemy
 cryptography 
 pdfplumber
 google-genai
+openai
 jinja2 
 weasyprint
 fastapi 

@@ -53,9 +53,11 @@ def search_similar_jobs(
                     CAST(:embedding AS VECTOR)
                 ) AS distance
 
+
             FROM jobs
 
-            WHERE job_id NOT IN ({",".join(placeholders)})
+            WHERE embedding IS NOT NULL
+            AND job_id NOT IN ({",".join(placeholders)})
 
             ORDER BY distance ASC
 
@@ -78,6 +80,8 @@ def search_similar_jobs(
                 ) AS distance
 
             FROM jobs
+
+            WHERE embedding IS NOT NULL
 
             ORDER BY distance ASC
 

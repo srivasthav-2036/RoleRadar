@@ -253,7 +253,7 @@ def fetch_jobs(role=None, sort_by_date=True):
 
     for index, company in enumerate(companies, start=1):
 
-        print(f"\n[{index}/{len(companies)}] {company}")
+        # print(f"\n[{index}/{len(companies)}] {company}")
 
         try:
 
@@ -266,12 +266,12 @@ def fetch_jobs(role=None, sort_by_date=True):
             )
 
             if response.status_code != 200:
-                print(f"Skipped ({response.status_code})")
+                # print(f"Skipped ({response.status_code})")
                 continue
 
             jobs = response.json()
 
-            print(f"Found {len(jobs)} jobs")
+            # print(f"Found {len(jobs)} jobs")
 
             for job in jobs:
 

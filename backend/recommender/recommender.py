@@ -36,8 +36,8 @@ from backend.resume_extractor.resume_text_tidb_storage import get_resume
 from backend.similarity_engine.engine import match_resume_to_job
 
 
-DISTANCE_THRESHOLD = 0.5   # cosine distance cutoff - tune against real data
-SCORE_THRESHOLD = 70       # Gemini match score (0-100) cutoff - "Good Match" is 75+
+DISTANCE_THRESHOLD = 0.7   # cosine distance cutoff - tune against real data
+SCORE_THRESHOLD = 60       # Gemini match score (0-100) cutoff - "Good Match" is 75+
 MAX_RECOMMENDATIONS = 15   # safety cap, not a target count
 
 
@@ -107,7 +107,14 @@ def generate_recommendations(
 
         # candidate_jobs is sorted by distance ascending, so once we
         # cross the threshold, everything after is even less similar
-        if job["distance"] > DISTANCE_THRESHOLD:
+        # if job["distance"] > DISTANCE_THRESHOLD:
+        #     break
+        distance = job.get("distance")
+
+        if distance is None:
+            continue
+
+        if distance > DISTANCE_THRESHOLD:
             break
 
         result = match_resume_to_job(
