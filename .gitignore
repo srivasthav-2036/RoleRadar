@@ -1,11 +1,53 @@
-# Ignore virtual environments completely
+# Python
 venv/
 env/
 ENV/
-
-# Ignore environment variables
-.env
-
-# Ignore any __pycache__ folder anywhere in the project tree
+__pycache__/
 **/__pycache__/
 *.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Next.js / Node
+node_modules/
+.pnp
+.pnp.js
+.next/
+out/
+build/
+.npm
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.eslintcache
+
+# Environment variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# OS / IDE
+.DS_Store
+.vscode/
+.idea/
+*.swp
