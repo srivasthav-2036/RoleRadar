@@ -118,9 +118,10 @@ sleep can't coordinate.
 """
 
 import json
+import logging
 import os
-import time,re
-from collections import deque
+import re
+import time
 
 from openai import OpenAI
 from dotenv import load_dotenv
@@ -131,26 +132,33 @@ from backend.rate_limiting.usage_tracker import (
     estimate_tokens,
     DailyBudgetExhaustedError,
 )
+from backend.rate_limiting.groq_throttle import GroqThrottle
 
 load_dotenv()
+
+logger = logging.getLogger(__name__)
 
 client = OpenAI(
     api_key=os.getenv("GROQ_API_KEY_FOR_JD_PARSING"),
     base_url="https://api.groq.com/openai/v1",
 )
 
-MODEL = "llama-3.1-8b-instant"
+MODEL         = "llama-3.1-8b-instant"
 PROVIDER_NAME = "groq_jd_parsing"
 
-# Confirmed from Groq console for this model - update if you switch
-# models (see docstring above for the gpt-oss-20b fallback numbers).
+# Confirmed from Groq console for this model — update if you switch models.
 RPM_LIMIT = 30
-RPD_LIMIT = 14400
-TPM_LIMIT = 6000
-TPD_LIMIT = 500000
+RPD_LIMIT = 14_400
+TPM_LIMIT = 6_000
+TPD_LIMIT = 500_000
 
-BATCH_SIZE = 3  # smaller than before - TPM=6000 is tight, keeps each
-                # call's token usage well under the per-minute ceiling
+# Jobs per LLM call.  TPM=6000 is the tight constraint; keep batches
+# small enough that one call's tokens stay comfortably under the limit.
+# 5 is a good balance between throughput and per-call token cost.
+BATCH_SIZE = 5
+
+# Per-module throttle instance (independent window from matcher.py)
+_throttle = GroqThrottle(rpm_limit=RPM_LIMIT, tpm_limit=TPM_LIMIT, label="[jd_parser]")
 
 __all__ = [
     "parse_job_descriptions_batch",
@@ -276,82 +284,19 @@ def _enforce_field_limits(parsed: dict) -> dict:
             parsed[field] = value[:limit]
     return parsed
 
-# Sliding 60-second window of (timestamp, tokens) for calls actually
-# made - used to pace against TPM/RPM precisely, rather than guessing
-# with a fixed sleep interval.
-_recent_calls = deque()
-
-
-def _prune_old_calls():
-    cutoff = time.time() - 60
-    while _recent_calls and _recent_calls[0][0] < cutoff:
-        _recent_calls.popleft()
-
-
-def _throttle_for_estimated_tokens(estimated_tokens_for_this_call: int):
-    """
-    Blocks (sleeps) until making a call with this many estimated
-    tokens would NOT push the trailing 60-second window over
-    TPM_LIMIT or RPM_LIMIT. Checks repeatedly since sleeping once
-    might not be enough if multiple recent calls are still in the
-    window.
-    """
-    while True:
-        _prune_old_calls()
-
-        tokens_in_window = sum(tokens for _, tokens in _recent_calls)
-        requests_in_window = len(_recent_calls)
-
-        fits_tokens = tokens_in_window + estimated_tokens_for_this_call <= TPM_LIMIT
-        fits_requests = requests_in_window + 1 <= RPM_LIMIT
-
-        if fits_tokens and fits_requests:
-            return
-
-        # Sleep until the oldest call in the window ages out past 60s
-        # oldest_timestamp = _recent_calls[0][0]
-        # sleep_for = max(0.5, 60 - (time.time() - oldest_timestamp))
-        #gpt code start
-        if not _recent_calls:
-            raise ValueError(
-                f"Estimated request ({estimated_tokens_for_this_call} tokens) "
-                f"already exceeds TPM_LIMIT ({TPM_LIMIT}). "
-                "Reduce BATCH_SIZE or shorten the prompt."
-            )
-        print(
-            f"deque_len={len(_recent_calls)}, "
-            f"tokens={tokens_in_window}, "
-            f"requests={requests_in_window}, "
-            f"estimated={estimated_tokens_for_this_call}"
-        )
-        print(
-            f"fits_tokens={fits_tokens}, "
-            f"fits_requests={fits_requests}"
-        )
-        oldest_timestamp = _recent_calls[0][0]
-        sleep_for = max(0.5, 60 - (time.time() - oldest_timestamp))
-        #gpt code end
-        print(
-            f"[jd_parser] Pacing for TPM/RPM: {tokens_in_window} tokens / "
-            f"{requests_in_window} requests in the last 60s - waiting {sleep_for:.1f}s"
-        )
-        time.sleep(sleep_for)
-
-
 def _call_groq_json(prompt: str) -> str:
     """
-    Makes one Groq call, JSON mode enforced. Checks the DAILY budget
-    first (raises DailyBudgetExhaustedError without calling Groq at
-    all if today's usage is too close to RPD/TPD), then paces against
-    the per-minute sliding window before actually calling.
+    Makes one Groq call with JSON mode enforced.
+    Checks the daily budget first, then paces against the per-minute
+    sliding window, then calls Groq with exponential-backoff retry on 429.
     """
-    estimated_input_tokens = estimate_tokens(prompt)
-    estimated_output_tokens = 1200  # rough guess, corrected after the call
-    estimated_total = estimated_input_tokens + estimated_output_tokens
-    print(
-    f"[jd_parser] estimated_input={estimated_input_tokens}, "
-    f"estimated_total={estimated_total}, "
-    f"TPM_LIMIT={TPM_LIMIT}"
+    estimated_input  = estimate_tokens(prompt)
+    estimated_output = 1200   # conservative; corrected after call
+    estimated_total  = estimated_input + estimated_output
+
+    logger.debug(
+        "[jd_parser] estimated_input=%d, estimated_total=%d, TPM_LIMIT=%d",
+        estimated_input, estimated_total, TPM_LIMIT,
     )
 
     check_budget(
@@ -362,34 +307,24 @@ def _call_groq_json(prompt: str) -> str:
         tpd_limit=TPD_LIMIT,
     )
 
-    _throttle_for_estimated_tokens(estimated_total)
+    _throttle.wait_for_capacity(estimated_total)
 
-    # response = client.chat.completions.create(
-    #     model=MODEL,
-    #     messages=[{"role": "user", "content": prompt}],
-    #     response_format={"type": "json_object"},
-    # )
-    response = client.chat.completions.create(
-        model=MODEL,
-        messages=[
-            {
-                "role":"system",
-                "content":JD_PARSER_PROMPT
-            },
-            {
-                "role":"user",
-                "content":prompt
-            }
-        ],
-        response_format={"type":"json_object"},
-    )
+    def _do_call() -> str:
+        response = client.chat.completions.create(
+            model=MODEL,
+            messages=[
+                {"role": "system", "content": JD_PARSER_PROMPT},
+                {"role": "user",   "content": prompt},
+            ],
+            response_format={"type": "json_object"},
+        )
+        actual_tokens = response.usage.total_tokens if response.usage else estimated_total
+        _throttle.record_call(actual_tokens)
+        record_usage(provider=PROVIDER_NAME, requests=1, tokens=actual_tokens)
+        logger.debug("[jd_parser] Groq call succeeded (tokens=%d)", actual_tokens)
+        return response.choices[0].message.content
 
-    actual_tokens = response.usage.total_tokens if response.usage else estimated_total
-
-    _recent_calls.append((time.time(), actual_tokens))
-    record_usage(provider=PROVIDER_NAME, requests=1, tokens=actual_tokens)
-
-    return response.choices[0].message.content
+    return _throttle.call_with_retry(_do_call)
 
 
 def parse_job_description(title: str, company: str, description: str | None) -> dict:
@@ -498,9 +433,10 @@ def parse_job_descriptions_batch(jobs: list[dict]) -> list[dict | None]:
             results.append(None)
 
     if missing:
-        print(
-            f"[jd_parser] batch missing {len(missing)}/{len(jobs)} job(s) "
-            f"at positions {missing} - skipped this run, retried automatically next run."
+        logger.warning(
+            "[jd_parser] Batch missing %d/%d job(s) at positions %s — "
+            "skipped this run, retried automatically next run.",
+            len(missing), len(jobs), missing,
         )
 
     return results

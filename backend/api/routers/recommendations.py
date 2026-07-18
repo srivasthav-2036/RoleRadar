@@ -5,6 +5,9 @@ Two separate endpoints:
     GET  /              -> read already-computed recommendations
                             (fast, no Gemini calls, what a "my
                             recommendations" page should use)
+    GET  /{job_id}      -> full detail for one recommendation,
+                            including the complete AI match breakdown
+                            from match_details JSON (never recomputed)
     POST /refresh        -> trigger a live run (vector search + Gemini
                             matching for anything genuinely new since
                             last check) - use sparingly, e.g. a
@@ -19,7 +22,10 @@ error.
 from fastapi import APIRouter, HTTPException, Depends
 
 from backend.recommender.recommender import generate_recommendations
-from backend.recommender.recommendation_storage import get_stored_recommendations
+from backend.recommender.recommendation_storage import (
+    get_stored_recommendations,
+    get_recommendation_detail,
+)
 from backend.resume_extractor.resume_text_tidb_storage import has_uploaded_resume
 from backend.auth.dependencies import get_current_user
 
@@ -44,6 +50,28 @@ def list_recommendations(user_id: str = Depends(get_current_user)):
         "count": len(recommendations),
         "recommendations": recommendations,
     }
+
+
+@router.get("/{job_id}")
+def get_recommendation(
+    job_id: str,
+    user_id: str = Depends(get_current_user),
+):
+    """
+    Full detail for a single recommendation including the complete
+    AI match breakdown. Returns 404 if this job was never recommended
+    to this user, or 400 if no resume has been uploaded.
+    """
+    _require_resume(user_id)
+
+    detail = get_recommendation_detail(user_id, job_id)
+    if detail is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Recommendation not found.",
+        )
+
+    return detail
 
 
 @router.post("/refresh")

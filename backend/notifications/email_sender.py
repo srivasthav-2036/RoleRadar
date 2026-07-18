@@ -139,3 +139,136 @@ def send_new_jobs_email(to_email: str, matched_jobs: list[dict]):
         )
     else:
         print(f"[email_sender] Sent to {to_email}")
+
+
+def send_welcome_email(to_email: str):
+    """
+    Sends a one-time welcome email when a new user registers.
+    Introduces RoleRadar and sets expectations about how the platform works.
+    """
+    if not BREVO_API_KEY or not SENDER_EMAIL:
+        print("[email_sender] Skipping welcome email — Brevo not configured.")
+        return
+
+    dashboard_link = f"{WEBSITE_BASE_URL}/dashboard" if WEBSITE_BASE_URL else "#"
+    resume_link = f"{WEBSITE_BASE_URL}/dashboard/resume" if WEBSITE_BASE_URL else "#"
+
+    html_content = f"""
+    <html>
+    <body style="font-family:Arial,sans-serif;background:#f9f9f7;margin:0;padding:0;">
+      <table width="100%" cellpadding="0" cellspacing="0" style="background:#f9f9f7;padding:32px 0;">
+        <tr>
+          <td align="center">
+            <table width="560" cellpadding="0" cellspacing="0"
+                   style="background:#ffffff;border-radius:12px;border:1px solid #e5e5e0;padding:40px 36px;max-width:560px;">
+              <tr>
+                <td>
+                  <!-- Logo/brand -->
+                  <div style="margin-bottom:28px;">
+                    <span style="font-size:18px;font-weight:600;color:#111;letter-spacing:-0.3px;">
+                      ● RoleRadar
+                    </span>
+                  </div>
+
+                  <!-- Headline -->
+                  <h1 style="font-size:22px;font-weight:600;color:#111;margin:0 0 12px 0;
+                              letter-spacing:-0.3px;line-height:1.3;">
+                    Welcome to RoleRadar 👋
+                  </h1>
+                  <p style="font-size:14px;color:#555;line-height:1.7;margin:0 0 20px 0;">
+                    You're now part of a smarter way to discover job opportunities.
+                    RoleRadar uses AI to match your resume against real job listings
+                    and sends you personalised recommendations directly to your inbox.
+                  </p>
+
+                  <!-- How it works -->
+                  <div style="background:#f5f5f0;border-radius:8px;padding:20px 20px;margin-bottom:24px;">
+                    <p style="font-size:12px;font-weight:700;color:#888;text-transform:uppercase;
+                               letter-spacing:0.1em;margin:0 0 14px 0;">How it works</p>
+                    <table width="100%" cellpadding="0" cellspacing="0">
+                      <tr>
+                        <td style="padding:0 0 12px 0;">
+                          <div style="font-size:14px;color:#333;line-height:1.5;">
+                            <strong style="color:#111;">1. Upload your resume</strong><br>
+                            Our AI parses your experience, skills, and projects.
+                          </div>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style="padding:0 0 12px 0;">
+                          <div style="font-size:14px;color:#333;line-height:1.5;">
+                            <strong style="color:#111;">2. We scan job listings</strong><br>
+                            Every few hours, RoleRadar fetches new opportunities and
+                            scores them against your profile.
+                          </div>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td>
+                          <div style="font-size:14px;color:#333;line-height:1.5;">
+                            <strong style="color:#111;">3. Receive personalised matches</strong><br>
+                            Get email alerts for your top-matching roles with AI match scores.
+                          </div>
+                        </td>
+                      </tr>
+                    </table>
+                  </div>
+
+                  <!-- CTA -->
+                  <div style="margin-bottom:28px;">
+                    <a href="{resume_link}"
+                       style="display:inline-block;background:#111;color:#fff;text-decoration:none;
+                              font-size:13px;font-weight:600;padding:11px 22px;border-radius:100px;">
+                      Upload Your Resume →
+                    </a>
+                  </div>
+
+                  <!-- Note -->
+                  <div style="border-top:1px solid #e5e5e0;padding-top:20px;">
+                    <p style="font-size:12.5px;color:#888;line-height:1.6;margin:0;">
+                      <strong>Note:</strong> RoleRadar currently searches a limited number of job
+                      providers. We're continuously adding more sources. In the meantime, we
+                      recommend continuing to search other job platforms as well.
+                    </p>
+                    <p style="font-size:12px;color:#aaa;margin:12px 0 0 0;">
+                      Found a bug? Email us at
+                      <a href="mailto:roleradar.notifications@gmail.com"
+                         style="color:#888;">roleradar.notifications@gmail.com</a>
+                    </p>
+                  </div>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+      </table>
+    </body>
+    </html>
+    """
+
+    payload = {
+        "sender": {"name": SENDER_NAME, "email": SENDER_EMAIL},
+        "to": [{"email": to_email}],
+        "subject": "Welcome to RoleRadar — your AI job matcher is ready",
+        "htmlContent": html_content,
+    }
+
+    headers = {
+        "accept": "application/json",
+        "api-key": BREVO_API_KEY,
+        "content-type": "application/json",
+    }
+
+    try:
+        response = requests.post(
+            BREVO_SEND_URL, json=payload, headers=headers, timeout=15
+        )
+        if response.status_code >= 300:
+            print(
+                f"[email_sender] FAILED welcome email to {to_email}: "
+                f"{response.status_code} {response.text}"
+            )
+        else:
+            print(f"[email_sender] Welcome email sent to {to_email}")
+    except Exception as e:
+        print(f"[email_sender] Error sending welcome email: {e}")

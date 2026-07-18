@@ -11,18 +11,30 @@ user just by naming a different id.
 """
 
 import jwt
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends, HTTPException, status, Request
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 
 from backend.auth.security import decode_access_token
 
-security_scheme = HTTPBearer()
+security_scheme = HTTPBearer(auto_error=False)
 
 
 def get_current_user(
+    request: Request,
     credentials: HTTPAuthorizationCredentials = Depends(security_scheme),
 ) -> str:
-    token = credentials.credentials
+    token = None
+    if credentials:
+        token = credentials.credentials
+
+    if not token:
+        token = request.query_params.get("token")
+
+    if not token:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Authentication token is missing.",
+        )
 
     try:
         user_id = decode_access_token(token)

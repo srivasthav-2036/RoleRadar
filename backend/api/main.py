@@ -11,7 +11,7 @@ maintenance/scheduled_run.py)
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from backend.api.routers import auth, resumes, recommendations, tailoring
+from backend.api.routers import auth, resumes, recommendations, tailoring, dashboard
 
 app = FastAPI(title="RoleRadar API")
 
@@ -26,6 +26,7 @@ app.include_router(auth.router, prefix="/api/auth", tags=["auth"])
 app.include_router(resumes.router, prefix="/api/resumes", tags=["resumes"])
 app.include_router(recommendations.router, prefix="/api/recommendations", tags=["recommendations"])
 app.include_router(tailoring.router, prefix="/api/tailoring", tags=["tailoring"])
+app.include_router(dashboard.router, prefix="/api/dashboard", tags=["dashboard"])
 
 
 @app.get("/")

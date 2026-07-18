@@ -250,6 +250,15 @@ def update_resume(user_id: str, resume_json: dict, search_queries: list):
                 "embedding": json.dumps(embedding),
             },
         )
+        conn.execute(
+            text("""
+                UPDATE recommendations
+                SET tailored_resume = NULL
+                WHERE user_id = :user_id
+            """),
+            {"user_id": user_id}
+        )
+
 
 
 def delete_resume(user_id: str):
@@ -257,14 +266,50 @@ def delete_resume(user_id: str):
     Delete all resumes for a user.
     """
 
-    query = text("""
-        DELETE FROM resumes
-        WHERE user_id = :user_id
-    """)
-
     with engine.begin() as conn:
-        conn.execute(query, {"user_id": user_id})
+        conn.execute(
+            text("""
+                DELETE FROM resumes
+                WHERE user_id = :user_id
+            """),
+            {"user_id": user_id}
+        )
+        conn.execute(
+            text("""
+                UPDATE recommendations
+                SET tailored_resume = NULL
+                WHERE user_id = :user_id
+            """),
+            {"user_id": user_id}
+        )
 
+
+"""
+Append to resume_extractor/resume_text_tidb_storage.py.
+"""
+
+
+def get_resume_strength(user_id: str):
+    """
+    Powers the 'Resume strength' stat card. Completeness-based:
+    percentage of key resume sections that are actually filled in.
+    Returns None if the user has no resume yet (frontend shows "-").
+    """
+    resume_data = get_resume(user_id)  # already exists in this file
+    if resume_data is None:
+        return None
+
+    resume = resume_data["resume"]
+
+    sections = [
+        bool(resume.get("summary")),
+        bool(resume.get("skills")),
+        bool(resume.get("experience")) or bool(resume.get("projects")),
+        bool(resume.get("education")),
+        bool(resume.get("certifications")) or bool(resume.get("achievements")),
+    ]
+
+    return round((sum(sections) / len(sections)) * 100)
 
 if __name__ == "__main__":
 

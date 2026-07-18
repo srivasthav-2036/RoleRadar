@@ -327,6 +327,24 @@ def _embed(text: str, task: str) -> List[float]:
     return response.json()["data"][0]["embedding"]
 
 
+def _list_to_str(items) -> str:
+    if not items:
+        return ""
+    if not isinstance(items, list):
+        return str(items)
+    res = []
+    for item in items:
+        if isinstance(item, dict):
+            name = item.get("name") or item.get("title") or item.get("certification") or item.get("authority")
+            if not name:
+                str_vals = [str(v) for v in item.values() if v]
+                name = str_vals[0] if str_vals else str(item)
+            res.append(str(name))
+        else:
+            res.append(str(item))
+    return ", ".join(res)
+
+
 def build_resume_text(resume: dict, search_queries: list[str]) -> str:
     """
     Convert parsed resume JSON into semantic text for embedding.
@@ -337,26 +355,31 @@ def build_resume_text(resume: dict, search_queries: list[str]) -> str:
         sections.append(f"Summary: {resume['summary']}")
 
     skills = resume.get("skills", {})
-    for category, values in skills.items():
-        if values:
-            sections.append(f"{category}: {', '.join(values)}")
+    if isinstance(skills, dict):
+        for category, values in skills.items():
+            if values:
+                sections.append(f"{category}: {_list_to_str(values)}")
+    elif isinstance(skills, list):
+        sections.append(f"Skills: {_list_to_str(skills)}")
 
     for exp in resume.get("experience", []):
+        exp_skills = exp.get("skills", [])
         sections.append(
             f"""
 Role: {exp.get("role", "")}
 Company: {exp.get("company", "")}
 Description: {exp.get("description", "")}
-Skills: {", ".join(exp.get("skills", []))}
+Skills: {_list_to_str(exp_skills)}
 """
         )
 
     for project in resume.get("projects", []):
+        tech = project.get("technologies", [])
         sections.append(
             f"""
 Project: {project.get("title", "")}
 Description: {project.get("description", "")}
-Technologies: {", ".join(project.get("technologies", []))}
+Technologies: {_list_to_str(tech)}
 Domain: {project.get("domain", "")}
 """
         )
@@ -374,24 +397,22 @@ Year: {edu.get("year", "")}
             )
 
     if resume.get("certifications"):
-        print(type(resume["certifications"]))
-        print(resume["certifications"])
-        sections.append("Certifications: " + ", ".join(resume["certifications"]))
+        sections.append("Certifications: " + _list_to_str(resume["certifications"]))
 
     if resume.get("achievements"):
-        sections.append("Achievements: " + ", ".join(resume["achievements"]))
+        sections.append("Achievements: " + _list_to_str(resume["achievements"]))
 
     if resume.get("languages"):
-        sections.append("Languages: " + ", ".join(resume["languages"]))
+        sections.append("Languages: " + _list_to_str(resume["languages"]))
 
     if resume.get("domains"):
-        sections.append("Domains: " + ", ".join(resume["domains"]))
+        sections.append("Domains: " + _list_to_str(resume["domains"]))
 
     if resume.get("keywords"):
-        sections.append("Keywords: " + ", ".join(resume["keywords"]))
+        sections.append("Keywords: " + _list_to_str(resume["keywords"]))
 
     if search_queries:
-        sections.append("Suggested Roles: " + ", ".join(search_queries))
+        sections.append("Suggested Roles: " + _list_to_str(search_queries))
 
     return "\n".join(sections)
 

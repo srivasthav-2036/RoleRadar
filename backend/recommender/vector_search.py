@@ -7,7 +7,7 @@ from backend.database.config import engine
 
 def search_similar_jobs(
     resume_embedding: list[float],
-    top_k: int = 300,
+    top_k: int = 30,
     exclude_job_ids: list[str] | None = None,
 ):
     """
