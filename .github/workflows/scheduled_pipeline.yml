@@ -25,6 +25,7 @@ jobs:
       - name: Run scheduled pipeline
         working-directory: backend
         env:
+          PYTHONPATH: ..
           GROQ_API_KEY_FOR_JD_PARSING: ${{ secrets.GROQ_API_KEY_FOR_JD_PARSING }}
           GROQ_API_KEY_FOR_SEMANTIC_MATCHING: ${{ secrets.GROQ_API_KEY_FOR_SEMANTIC_MATCHING }}
           JINA_API_KEY: ${{ secrets.JINA_API_KEY }}

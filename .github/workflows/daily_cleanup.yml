@@ -22,6 +22,7 @@ jobs:
       - name: Run cleanup
         working-directory: backend
         env:
+          PYTHONPATH: ..
           TIDB_USER: ${{ secrets.TIDB_USER }}
           TIDB_PASSWORD: ${{ secrets.TIDB_PASSWORD }}
           TIDB_HOST: ${{ secrets.TIDB_HOST }}
