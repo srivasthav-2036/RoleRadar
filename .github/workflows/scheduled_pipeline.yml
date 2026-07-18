@@ -25,10 +25,13 @@ jobs:
       - name: Run scheduled pipeline
         working-directory: backend
         env:
-          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-          GEMINI_API_KEY_FOR_JD_PARSING: ${{ secrets.GEMINI_API_KEY_FOR_JD_PARSING }}
-          GEMINI_API_KEY_FOR_SEMANTIC_MATCHING: ${{ secrets.GEMINI_API_KEY_FOR_SEMANTIC_MATCHING }}
+          GROQ_API_KEY_FOR_JD_PARSING: ${{ secrets.GROQ_API_KEY_FOR_JD_PARSING }}
+          GROQ_API_KEY_FOR_SEMANTIC_MATCHING: ${{ secrets.GROQ_API_KEY_FOR_SEMANTIC_MATCHING }}
+          JINA_API_KEY: ${{ secrets.JINA_API_KEY }}
           GEMINI_API_KEY_FOR_TAILORING: ${{ secrets.GEMINI_API_KEY_FOR_TAILORING }}
+          ADZUNA_APP_ID: ${{ secrets.ADZUNA_APP_ID }}
+          ADZUNA_API_KEY: ${{ secrets.ADZUNA_API_KEY }}
+          RAPIDAPI_KEY: ${{ secrets.RAPIDAPI_KEY }}
           TIDB_USER: ${{ secrets.TIDB_USER }}
           TIDB_PASSWORD: ${{ secrets.TIDB_PASSWORD }}
           TIDB_HOST: ${{ secrets.TIDB_HOST }}

@@ -55,19 +55,19 @@ def run_scheduled_pipeline():
     recommendations_created = 0
     emails_sent = 0
 
-    # search_queries = get_all_search_queries()
-    # print(f"Found {len(search_queries)} unique search queries across all resumes.")
+    search_queries = get_all_search_queries()
+    print(f"Found {len(search_queries)} unique search queries across all resumes.")
 
-    # if not search_queries:
-    #     print("No search queries found (no resumes uploaded yet?) - skipping fetch.")
-    # else:
-    #     fetched = fetch_all_jobs(search_queries, location=LOCATION)
-    #     # fetch_all_jobs returns the count of jobs fetched/stored
-    #     if isinstance(fetched, int):
-    #         jobs_fetched = fetched
-    #     elif isinstance(fetched, list):
-    #         jobs_fetched = len(fetched)
-    #     jobs_parsed = jobs_fetched  # treat as parsed = fetched
+    if not search_queries:
+        print("No search queries found (no resumes uploaded yet?) - skipping fetch.")
+    else:
+        fetched = fetch_all_jobs(search_queries, location=LOCATION)
+        # fetch_all_jobs returns the count of jobs fetched/stored
+        if isinstance(fetched, int):
+            jobs_fetched = fetched
+        elif isinstance(fetched, list):
+            jobs_fetched = len(fetched)
+        jobs_parsed = jobs_fetched  # treat as parsed = fetched
 
     users = get_all_users()
     print(f"Checking recommendations for {len(users)} users.")
