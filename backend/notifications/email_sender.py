@@ -45,7 +45,8 @@ def _job_card_html(rec: dict) -> str:
 
     if WEBSITE_BASE_URL:
         open_tag = (
-            f'<a href="{WEBSITE_BASE_URL}/recommendations?job_id={job_id}" '
+            # f'<a href="{WEBSITE_BASE_URL}/recommendations?job_id={job_id}" '
+            f'<a href="{WEBSITE_BASE_URL}/dashboard/tailored" '
             f'style="text-decoration:none;color:inherit;display:block;">'
         )
         close_tag = "</a>"
@@ -79,7 +80,8 @@ def _build_html(matched_jobs: list[dict]) -> str:
         if WEBSITE_BASE_URL:
             more_html = (
                 f'<p style="margin-top:6px;">'
-                f'<a href="{WEBSITE_BASE_URL}/recommendations">+{remaining} more on RoleRadar</a>'
+                # f'<a href="{WEBSITE_BASE_URL}/recommendations">+{remaining} more on RoleRadar</a>'
+                f'<a href="{WEBSITE_BASE_URL}/dashboard/tailored">+{remaining} more on RoleRadar</a>'
                 f"</p>"
             )
         else:
@@ -271,4 +273,4 @@ def send_welcome_email(to_email: str):
         else:
             print(f"[email_sender] Welcome email sent to {to_email}")
     except Exception as e:
-        print(f"[email_sender] Error sending welcome email: {e}")
+        print(f"[email_sender] Error sending welcome email: {e}")
