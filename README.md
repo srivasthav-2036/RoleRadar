@@ -18,12 +18,12 @@
 
 ## Features
 
-- 📄 **Resume Upload & Parsing** — Upload a PDF resume; AI extracts your skills, experience, and projects
-- 🔍 **Smart Job Matching** — Hybrid matching using vector embeddings + LLM scoring (0–100)
-- 📬 **Email Notifications** — Get notified when new matching jobs are found
-- ✍️ **AI Resume Tailoring** — Generate a tailored resume for any job listing, downloadable as PDF
-- 📊 **Dashboard** — See your top job recommendations and match scores in one place
-- 🔐 **Auth** — Secure login & registration with JWT tokens and bcrypt password hashing
+-  **Resume Upload & Parsing** — Upload a PDF resume; AI extracts your skills, experience, and projects
+-  **Smart Job Matching** — Hybrid matching using vector embeddings + LLM scoring (0–100)
+-  **Email Notifications** — Get notified when new matching jobs are found
+-  **AI Resume Tailoring** — Generate a tailored resume for any job listing, downloadable as PDF
+-  **Dashboard** — See your top job recommendations and match scores in one place
+-  **Auth** — Secure login & registration with JWT tokens and bcrypt password hashing
 
 ---
 
