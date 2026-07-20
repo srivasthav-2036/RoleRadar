@@ -5,7 +5,9 @@ on:
     # Every 4 hours. GitHub Actions cron is UTC and best-effort - the
     # actual run can be delayed up to ~10-15 minutes during high load
     # on GitHub's shared runners. Fine for a "every ~4 hours" job.
-    - cron: "0 */4 * * *"
+    # - cron: "0 */4 * * *" # to run every 4hrs 
+    - cron: "31 2 * * *" # every day at 2:31 AM UTC = 8:01 AM IST.
+
   workflow_dispatch: {}   # lets you manually trigger a run from the Actions tab
 
 jobs:
