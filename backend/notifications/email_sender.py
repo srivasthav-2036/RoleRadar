@@ -175,7 +175,7 @@ def send_welcome_email(to_email: str):
                   <!-- Headline -->
                   <h1 style="font-size:22px;font-weight:600;color:#111;margin:0 0 12px 0;
                               letter-spacing:-0.3px;line-height:1.3;">
-                    Welcome to RoleRadar 👋
+                    Welcome to RoleRadar 
                   </h1>
                   <p style="font-size:14px;color:#555;line-height:1.7;margin:0 0 20px 0;">
                     You're now part of a smarter way to discover job opportunities.
@@ -274,3 +274,103 @@ def send_welcome_email(to_email: str):
             print(f"[email_sender] Welcome email sent to {to_email}")
     except Exception as e:
         print(f"[email_sender] Error sending welcome email: {e}")
+
+
+def send_otp_email(to_email: str, otp_code: str) -> None:
+    """
+    Sends a 6-digit OTP verification email during registration.
+    The otp_code is embedded in the email body. This function does NOT
+    log the OTP value — only success/failure status is printed.
+    """
+    if not BREVO_API_KEY or not SENDER_EMAIL:
+        print("[email_sender] Skipping OTP email — Brevo not configured.")
+        return
+
+    html_content = f"""
+    <html>
+    <body style="font-family:Arial,sans-serif;background:#f9f9f7;margin:0;padding:0;">
+      <table width="100%" cellpadding="0" cellspacing="0" style="background:#f9f9f7;padding:32px 0;">
+        <tr>
+          <td align="center">
+            <table width="480" cellpadding="0" cellspacing="0"
+                   style="background:#ffffff;border-radius:12px;border:1px solid #e5e5e0;
+                          padding:40px 36px;max-width:480px;">
+              <tr>
+                <td>
+                  <!-- Brand -->
+                  <div style="margin-bottom:24px;">
+                    <span style="font-size:17px;font-weight:600;color:#111;letter-spacing:-0.3px;">
+                      ● RoleRadar
+                    </span>
+                  </div>
+
+                  <!-- Headline -->
+                  <h1 style="font-size:20px;font-weight:600;color:#111;margin:0 0 10px 0;
+                              letter-spacing:-0.3px;line-height:1.3;">
+                    Verify your email address
+                  </h1>
+                  <p style="font-size:14px;color:#555;line-height:1.6;margin:0 0 24px 0;">
+                    Use the verification code below to complete your RoleRadar registration.
+                    This code expires in <strong>10 minutes</strong>.
+                  </p>
+
+                  <!-- OTP Box -->
+                  <div style="background:#f5f5f0;border-radius:10px;padding:24px;
+                              text-align:center;margin-bottom:24px;">
+                    <p style="font-size:11px;font-weight:700;color:#888;
+                               text-transform:uppercase;letter-spacing:0.15em;margin:0 0 12px 0;">
+                      Your verification code
+                    </p>
+                    <div style="font-size:36px;font-weight:700;letter-spacing:12px;
+                                color:#111;font-family:monospace;">
+                      {otp_code}
+                    </div>
+                  </div>
+
+                  <!-- Security note -->
+                  <div style="border-top:1px solid #e5e5e0;padding-top:18px;">
+                    <p style="font-size:12.5px;color:#888;line-height:1.6;margin:0;">
+                      If you did not request this code, you can safely ignore this email.
+                      Your account will not be created unless you complete verification.
+                    </p>
+                    <p style="font-size:12px;color:#aaa;margin:10px 0 0 0;">
+                      Do not share this code with anyone.
+                    </p>
+                  </div>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+      </table>
+    </body>
+    </html>
+    """
+
+    payload = {
+        "sender": {"name": SENDER_NAME, "email": SENDER_EMAIL},
+        "to": [{"email": to_email}],
+        "subject": f"{otp_code} is your RoleRadar verification code",
+        "htmlContent": html_content,
+    }
+
+    headers = {
+        "accept": "application/json",
+        "api-key": BREVO_API_KEY,
+        "content-type": "application/json",
+    }
+
+    try:
+        response = requests.post(
+            BREVO_SEND_URL, json=payload, headers=headers, timeout=15
+        )
+        if response.status_code >= 300:
+            print(
+                f"[email_sender] FAILED OTP email to {to_email}: "
+                f"{response.status_code} {response.text}"
+            )
+        else:
+            print(f"[email_sender] OTP email sent to {to_email}")
+    except Exception as e:
+        print(f"[email_sender] Error sending OTP email: {e}")
+

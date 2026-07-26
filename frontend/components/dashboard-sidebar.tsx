@@ -8,8 +8,8 @@ import {
   Settings,
   LogOut,
   Clock,
+  X,
 } from "lucide-react";
-import Link from "next/link";
 import { ThemeToggle } from "./theme-toggle";
 import { useAuth } from "@/lib/auth-context";
 import { useNavigationLoading } from "@/lib/navigation-context";
@@ -34,42 +34,66 @@ function UserInitials({ name, email }: { name: string | null; email: string }) {
   return <>{initials}</>;
 }
 
-export function DashboardSidebar() {
+interface DashboardSidebarProps {
+  /** Mobile only: whether the sidebar overlay is open */
+  isOpen?: boolean;
+  /** Mobile only: called when the user closes the sidebar */
+  onClose?: () => void;
+}
+
+export function DashboardSidebar({ isOpen = false, onClose }: DashboardSidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
   const { user, logout } = useAuth();
   const { startLoading } = useNavigationLoading();
 
   function navigate(href: string) {
-    if (pathname === href) return;
+    if (pathname === href) {
+      onClose?.();
+      return;
+    }
     startLoading();
+    onClose?.();
     router.push(href);
   }
 
   function handleLogout() {
     startLoading();
+    onClose?.();
     logout();
     router.push("/login");
   }
 
   const displayName = user?.name ?? user?.email?.split("@")[0] ?? "";
 
-  return (
-    <aside className="hidden w-60 shrink-0 border-r border-line px-4 py-6 dark:border-line-dark md:flex md:flex-col">
-      {/* Logo */}
-      <button
-        onClick={() => navigate("/")}
-        className="mb-10 flex items-center gap-2.5 px-1.5"
-      >
-        <svg width="18" height="18" viewBox="0 0 20 20" fill="none" aria-hidden="true">
-          <circle cx="10" cy="10" r="9" stroke="currentColor" strokeWidth="1.2" opacity="0.35" />
-          <circle cx="10" cy="10" r="5.5" stroke="currentColor" strokeWidth="1.2" opacity="0.6" />
-          <circle cx="10" cy="10" r="2" fill="#B8862E" />
-        </svg>
-        <span className="font-display text-[14.5px] font-medium tracking-tight text-ink dark:text-ink-dark">
-          RoleRadar
-        </span>
-      </button>
+  // ─── Sidebar content (shared between mobile overlay and desktop) ──────────
+  const SidebarContent = (
+    <>
+      {/* Logo + Mobile close button row */}
+      <div className="mb-10 flex items-center justify-between px-1.5">
+        <button
+          onClick={() => navigate("/")}
+          className="flex items-center gap-2.5"
+        >
+          <svg width="18" height="18" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+            <circle cx="10" cy="10" r="9" stroke="currentColor" strokeWidth="1.2" opacity="0.35" />
+            <circle cx="10" cy="10" r="5.5" stroke="currentColor" strokeWidth="1.2" opacity="0.6" />
+            <circle cx="10" cy="10" r="2" fill="#B8862E" />
+          </svg>
+          <span className="font-display text-[14.5px] font-medium tracking-tight text-ink dark:text-ink-dark">
+            RoleRadar
+          </span>
+        </button>
+
+        {/* Close button — only shown on mobile overlay */}
+        <button
+          onClick={onClose}
+          aria-label="Close menu"
+          className="flex h-7 w-7 items-center justify-center rounded-lg text-muted transition-colors hover:bg-line/50 hover:text-ink dark:text-muted-dark dark:hover:bg-line-dark/50 dark:hover:text-ink-dark md:hidden"
+        >
+          <X className="h-4 w-4" />
+        </button>
+      </div>
 
       {/* Nav */}
       <nav className="flex flex-1 flex-col gap-0.5">
@@ -121,6 +145,34 @@ export function DashboardSidebar() {
           Sign out
         </button>
       </div>
-    </aside>
+    </>
+  );
+
+  return (
+    <>
+      {/* ── Desktop sidebar (always visible on md+) ─────────────────────── */}
+      <aside className="hidden w-60 shrink-0 border-r border-line px-4 py-6 dark:border-line-dark md:flex md:flex-col">
+        {SidebarContent}
+      </aside>
+
+      {/* ── Mobile overlay backdrop ──────────────────────────────────────── */}
+      {isOpen && (
+        <div
+          className="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm md:hidden"
+          onClick={onClose}
+          aria-hidden="true"
+        />
+      )}
+
+      {/* ── Mobile slide-in sidebar ──────────────────────────────────────── */}
+      <aside
+        className={`fixed inset-y-0 left-0 z-50 flex w-64 flex-col border-r border-line bg-paper px-4 py-6 shadow-xl transition-transform duration-300 dark:border-line-dark dark:bg-paper-dark md:hidden ${
+          isOpen ? "translate-x-0" : "-translate-x-full"
+        }`}
+        aria-label="Navigation menu"
+      >
+        {SidebarContent}
+      </aside>
+    </>
   );
 }

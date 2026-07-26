@@ -12,30 +12,37 @@ RECALIBRATION HISTORY:
     relevant candidates with 70-80% skill match scored in the 50s and
     were filtered out of recommendations.
 
-2026-07-17 (v2 — this version) — Recalibrated for better coverage:
+2026-07-17 (v2) — Recalibrated for better coverage:
+    Component ceilings raised 93→96, missing-skill penalty reduced
+    3→2 pts/skill, calibration curve constant loosened +8→+5,
+    certificate bonus cap raised +3→+4. Result: too lenient —
+    mid-range and weak matches were inflated into the 70-80s.
 
-1.  Component ceilings raised 93 → 96.  "Excellent"/"Strong" labels
-    now map to 96 so a well-matched candidate can reach the high 80s
-    before compression, while 100 remains effectively unreachable.
+2026-07-26 (v3 — this version) — Slightly stricter to better reflect
+    actual resume-job fit quality:
 
-2.  Missing-skill penalty reduced: 3 pts/skill → 2 pts/skill,
-    max cap 15 → 12.  A candidate missing 3 required skills loses
-    6 pts instead of 9 — meaningful but no longer disqualifying.
+1.  Missing-skill penalty raised: 2.0 → 2.5 pts/skill.
+    A candidate missing 3 required skills loses 7.5 pts instead of 6.
+    Max cap unchanged at 12.0.
 
-3.  Calibration curve constant loosened: +8 → +5.  This lifts
-    mid-range scores (75-90 raw) by 2-4 pts without allowing
-    perfect scores to inflate:
-        raw=96 → ~93.8   raw=85 → ~84.1
-        raw=75 → ~73.5   raw=60 → ~58.4
+2.  Skill score base cap lowered: 93 → 90.
+    Only a near-perfect skill match approaches the ceiling.
+    Reduces inflation from "mostly matching" candidates.
 
-4.  Certificate bonus cap raised +3 → +4 so strong cert matches
-    can meaningfully tip a borderline candidate.
+3.  Calibration curve constant tightened: +5 → +6.
+    Slightly more compression of mid-range scores.
+        raw=96 → ~92.8   raw=85 → ~83.0
+        raw=75 → ~72.5   raw=60 → ~57.6
 
-Thresholds (get_overall_match) — unchanged from v1:
+4.  Good Match threshold raised: 72 → 73.
+    Average Match threshold raised: 55 → 57.
+    Excellent Match unchanged at ≥ 88.
+
+Thresholds (get_overall_match):
     Excellent Match  : ≥ 88
-    Good Match       : ≥ 72
-    Average Match    : ≥ 55
-    Weak Match       : < 55
+    Good Match       : ≥ 73
+    Average Match    : ≥ 57
+    Weak Match       : < 57
 """
 
 import math
@@ -91,9 +98,9 @@ CERTIFICATE_BONUS = {
     "None":     0,
 }
 
-# Penalty per unmatched required skill — reduced from 3.0 → 2.0
-# Max cap reduced from 15.0 → 12.0 to avoid over-penalising
-_MISSING_SKILL_PENALTY_PER = 2.0
+# Penalty per unmatched required skill — raised from 2.0 → 2.5 (v3)
+# Max cap unchanged at 12.0
+_MISSING_SKILL_PENALTY_PER = 2.5
 _MISSING_SKILL_PENALTY_MAX = 12.0
 
 
@@ -157,8 +164,8 @@ def calculate_skill_score(job_profile: Dict, match_result: Dict) -> float:
 
     raw = required_ratio * 0.80 + preferred_ratio * 0.20
 
-    # Cap at 93 (mirrors the component maximum philosophy)
-    base_score = round(raw * 93, 2)
+    # Cap at 90 (lowered from 93 in v3 to reduce inflation from partial matches)
+    base_score = round(raw * 90, 2)
 
     # Penalty for unmatched *required* skills — missing critical skills
     # must visibly lower the score, not be absorbed by high preferred-match
@@ -176,17 +183,17 @@ def calculate_skill_score(job_profile: Dict, match_result: Dict) -> float:
 def _calibrate(raw: float) -> float:
     """
     Compress scores so that values near 100 are genuinely hard to reach.
-    Derived from:  calibrated = 100 × (raw / (raw + 5)) ^ 0.92
-    Constant changed from +8 → +5 (v2) to lift mid-range scores.
+    Derived from:  calibrated = 100 × (raw / (raw + 6)) ^ 0.92
+    Constant changed from +5 → +6 (v3) to slightly compress mid-range scores.
     Examples:
-        raw=96 → ~93.8      raw=85 → ~84.1
-        raw=75 → ~73.5      raw=60 → ~58.4
-    At raw=100, result ≈ 97.1 — unreachable in practice since component
+        raw=96 → ~92.8      raw=85 → ~83.0
+        raw=75 → ~72.5      raw=60 → ~57.6
+    At raw=100, result ≈ 96.2 — unreachable in practice since component
     ceilings cap the weighted sum well below 100.
     """
     if raw <= 0:
         return 0.0
-    calibrated = 100.0 * ((raw / (raw + 5.0)) ** 0.92)
+    calibrated = 100.0 * ((raw / (raw + 6.0)) ** 0.92)
     return round(min(calibrated, 100.0), 2)
 
 
@@ -197,9 +204,9 @@ def _calibrate(raw: float) -> float:
 def get_overall_match(score: float) -> str:
     if score >= 88:
         return "Excellent Match"
-    if score >= 72:
+    if score >= 73:
         return "Good Match"
-    if score >= 55:
+    if score >= 57:
         return "Average Match"
     return "Weak Match"
 

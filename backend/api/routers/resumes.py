@@ -84,21 +84,23 @@ def _post_upload_pipeline(user_id: str, email: str):
                 "source": "resume_upload",
             })
 
-            _set_status(user_id, "running", "Sending your recommendation email\u2026")
+            from backend.users.users_storage import get_notification_preference
+            if get_notification_preference(user_id):
+                _set_status(user_id, "running", "Sending your recommendation email\u2026")
 
-            matched_jobs = [
-                {
-                    "job": {
-                        "job_id": rec["job"].get("job_id", ""),
-                        "title": rec["job"].get("title", ""),
-                        "company": rec["job"].get("company", ""),
-                    },
-                    "score": rec.get("score", ""),
-                }
-                for rec in new_recs
-            ]
-            send_new_jobs_email(email, matched_jobs)
-            log_activity(user_id, "email_sent", {"count": 1})
+                matched_jobs = [
+                    {
+                        "job": {
+                            "job_id": rec["job"].get("job_id", ""),
+                            "title": rec["job"].get("title", ""),
+                            "company": rec["job"].get("company", ""),
+                        },
+                        "score": rec.get("score", ""),
+                    }
+                    for rec in new_recs
+                ]
+                send_new_jobs_email(email, matched_jobs)
+                log_activity(user_id, "email_sent", {"count": 1})
 
         _set_status(user_id, "done", "Done!")
 

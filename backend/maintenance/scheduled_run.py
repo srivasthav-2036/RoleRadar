@@ -32,6 +32,7 @@ from backend.resume_extractor.resume_text_tidb_storage import (
     get_all_search_queries,
 )
 from backend.notifications.email_sender import send_new_jobs_email
+from backend.users.users_storage import get_notification_preference
 from backend.maintenance.pipeline_log import (
     start_pipeline_run,
     finish_pipeline_run,
@@ -99,15 +100,19 @@ def run_scheduled_pipeline():
         except Exception:
             pass
 
-        try:
-            send_new_jobs_email(to_email=email, matched_jobs=recommendations)
-            emails_sent += 1
+        # Only send email if the user has not opted out
+        if get_notification_preference(user_id):
             try:
-                log_activity(user_id, "email_sent", {"count": 1})
-            except Exception:
-                pass
-        except Exception as e:
-            print(f"[scheduled_run] email failed for {user_id}: {e}")
+                send_new_jobs_email(to_email=email, matched_jobs=recommendations)
+                emails_sent += 1
+                try:
+                    log_activity(user_id, "email_sent", {"count": 1})
+                except Exception:
+                    pass
+            except Exception as e:
+                print(f"[scheduled_run] email failed for {user_id}: {e}")
+        else:
+            print(f"[scheduled_run] Skipping email for {user_id} (notifications disabled)")
 
     # Write run completion to pipeline_runs table
     finish_pipeline_run(

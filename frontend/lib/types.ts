@@ -4,6 +4,7 @@ export interface User {
   user_id: string;
   email: string;
   name: string | null;
+  email_notifications: boolean;
 }
 
 // Job card list item (lean, from GET /api/recommendations/)

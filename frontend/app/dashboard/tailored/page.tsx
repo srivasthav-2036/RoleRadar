@@ -184,61 +184,66 @@ function TailoredJobRow({
   const busy = previewing || downloading;
 
   return (
-    <div className="flex items-center justify-between gap-4 rounded-xl border border-line bg-surface p-4 transition-shadow hover:shadow-card dark:border-line-dark dark:bg-surface-dark">
-      <div className="flex items-center gap-3 min-w-0">
-        <MatchDial score={job.score} size="sm" />
-        <div className="min-w-0">
-          <p className="truncate font-display text-[14px] font-medium text-ink dark:text-ink-dark">
-            {job.title}
-          </p>
-          <p className="text-[12.5px] text-muted dark:text-muted-dark">
-            {job.company}
-          </p>
+    <div className="rounded-xl border border-line bg-surface p-4 transition-shadow hover:shadow-card dark:border-line-dark dark:bg-surface-dark">
+      {/* Single-row on sm+, stacked on mobile */}
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+        {/* Left: dial + title/company */}
+        <div className="flex items-center gap-3 min-w-0">
+          <MatchDial score={job.score} size="sm" />
+          <div className="min-w-0 flex-1">
+            <p className="truncate font-display text-[14px] font-medium text-ink dark:text-ink-dark">
+              {job.title}
+            </p>
+            <p className="text-[12.5px] text-muted dark:text-muted-dark">
+              {job.company}
+            </p>
+          </div>
         </div>
-      </div>
 
-      <div className="flex shrink-0 items-center gap-2">
-        {/* Preview — opens HTML in new tab */}
-        <button
-          onClick={() => onPreview(job)}
-          disabled={disabled || busy}
-          title="Preview tailored resume in new tab"
-          className="flex items-center gap-1.5 rounded-lg border border-line px-3 py-1.5 text-[12.5px] text-muted transition-colors hover:border-ink/30 hover:text-ink disabled:cursor-not-allowed disabled:opacity-40 dark:border-line-dark dark:text-muted-dark dark:hover:border-ink-dark/30 dark:hover:text-ink-dark"
-        >
-          {previewing ? (
-            <Loader2 className="h-3 w-3 animate-spin" />
-          ) : (
-            <FileCheck2 className="h-3 w-3" />
-          )}
-          Preview
-        </button>
-
-        {/* Download PDF */}
-        <button
-          onClick={() => onDownload(job)}
-          disabled={disabled || busy}
-          title="Download tailored resume as PDF"
-          className="flex items-center gap-1.5 rounded-lg border border-line px-3 py-1.5 text-[12.5px] text-muted transition-colors hover:border-ink/30 hover:text-ink disabled:cursor-not-allowed disabled:opacity-40 dark:border-line-dark dark:text-muted-dark dark:hover:border-ink-dark/30 dark:hover:text-ink-dark"
-        >
-          {downloading ? (
-            <Loader2 className="h-3 w-3 animate-spin" />
-          ) : (
-            <Download className="h-3 w-3" />
-          )}
-          Download
-        </button>
-
-        {job.apply_url && (
-          <a
-            href={job.apply_url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-1.5 rounded-lg bg-ink px-3 py-1.5 text-[12.5px] font-medium text-paper transition-colors hover:bg-ink/85 dark:bg-ink-dark dark:text-paper-dark"
+        {/* Right: action buttons — wrap on mobile, single row on sm+ */}
+        <div className="flex shrink-0 flex-wrap items-center gap-2 sm:flex-nowrap">
+          {/* Preview */}
+          <button
+            onClick={() => onPreview(job)}
+            disabled={disabled || busy}
+            title="Preview tailored resume in new tab"
+            className="flex items-center gap-1.5 rounded-lg border border-line px-3 py-1.5 text-[12.5px] text-muted transition-colors hover:border-ink/30 hover:text-ink disabled:cursor-not-allowed disabled:opacity-40 dark:border-line-dark dark:text-muted-dark dark:hover:border-ink-dark/30 dark:hover:text-ink-dark"
           >
-            Apply
-            <ExternalLink className="h-3 w-3" />
-          </a>
-        )}
+            {previewing ? (
+              <Loader2 className="h-3 w-3 animate-spin" />
+            ) : (
+              <FileCheck2 className="h-3 w-3" />
+            )}
+            Preview
+          </button>
+
+          {/* Download PDF */}
+          <button
+            onClick={() => onDownload(job)}
+            disabled={disabled || busy}
+            title="Download tailored resume as PDF"
+            className="flex items-center gap-1.5 rounded-lg border border-line px-3 py-1.5 text-[12.5px] text-muted transition-colors hover:border-ink/30 hover:text-ink disabled:cursor-not-allowed disabled:opacity-40 dark:border-line-dark dark:text-muted-dark dark:hover:border-ink-dark/30 dark:hover:text-ink-dark"
+          >
+            {downloading ? (
+              <Loader2 className="h-3 w-3 animate-spin" />
+            ) : (
+              <Download className="h-3 w-3" />
+            )}
+            Download
+          </button>
+
+          {job.apply_url && (
+            <a
+              href={job.apply_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1.5 rounded-lg bg-ink px-3 py-1.5 text-[12.5px] font-medium text-paper transition-colors hover:bg-ink/85 dark:bg-ink-dark dark:text-paper-dark"
+            >
+              Apply
+              <ExternalLink className="h-3 w-3" />
+            </a>
+          )}
+        </div>
       </div>
     </div>
   );
@@ -394,7 +399,7 @@ export default function TailoredPage() {
         <PipelineStatusBanner onComplete={fetchJobs} />
         {/* Header */}
         <div className="mb-8">
-          <div className="flex items-center gap-2.5">
+          <div className="flex items-center gap-2.5 pl-10 md:pl-0">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-line bg-surface dark:border-line-dark dark:bg-surface-dark">
               <Sparkles className="h-4 w-4 text-signal" />
             </div>

@@ -388,7 +388,7 @@ export default function DashboardPage() {
       <div className="mx-auto max-w-6xl">
         {/* ── Greeting ── */}
         <div className="mb-8 flex items-end justify-between">
-          <div>
+          <div className="pl-10 md:pl-0">
             {/* Time badge */}
             <div className="mb-2 inline-flex items-center gap-1.5 rounded-full border border-line bg-surface px-2.5 py-1 dark:border-line-dark dark:bg-surface-dark">
               <span className="h-1.5 w-1.5 rounded-full bg-signal" />
@@ -409,19 +409,20 @@ export default function DashboardPage() {
             </p>
           </div>
 
-          <div className="hidden flex-col items-end gap-2 md:flex">
+          <div className="flex flex-col items-end gap-2">
             <button
               onClick={handleRefresh}
               disabled={refreshing}
-              className="flex items-center gap-2 rounded-full border border-line px-4 py-2 text-[13px] text-muted transition-colors hover:border-ink/30 hover:text-ink disabled:opacity-50 dark:border-line-dark dark:text-muted-dark dark:hover:border-ink-dark/30 dark:hover:text-ink-dark"
+              className="flex items-center gap-2 rounded-full border border-line px-3 py-1.5 text-[12.5px] text-muted transition-colors hover:border-ink/30 hover:text-ink disabled:opacity-50 dark:border-line-dark dark:text-muted-dark dark:hover:border-ink-dark/30 dark:hover:text-ink-dark md:px-4 md:py-2 md:text-[13px]"
             >
               <RefreshCw className={`h-3.5 w-3.5 ${refreshing ? "animate-spin" : ""}`} />
-              {refreshing ? "Scanning..." : "Refresh matches"}
+              <span className="hidden sm:inline">{refreshing ? "Scanning..." : "Refresh matches"}</span>
+              <span className="sm:hidden">{refreshing ? "..." : "Refresh"}</span>
             </button>
             {/* Refresh status message */}
             {refreshStatus && (
               <p
-                className={`text-[12px] transition-all duration-300 ${
+                className={`text-right text-[11.5px] transition-all duration-300 md:text-[12px] ${
                   refreshStatus.startsWith("Done")
                     ? "text-signal"
                     : "animate-pulse text-muted dark:text-muted-dark"
@@ -436,7 +437,7 @@ export default function DashboardPage() {
         {/* ── Pipeline status banner (shows after upload, auto-refreshes on done) ── */}
         <PipelineStatusBanner onComplete={handlePipelineComplete} />
 
-        {/* ── Stat cards — 4 cards, no duplicates with Live Scheduler ── */}
+        {/* ── Stat cards — 2 cols on mobile, 4 on md+ ── */}
         <div className="mb-8 grid grid-cols-2 gap-3 md:grid-cols-4">
           {statsLoading ? (
             <>
@@ -483,9 +484,42 @@ export default function DashboardPage() {
         )}
 
         {/* ── Main grid: jobs + right panel ── */}
-        <div className="grid gap-8 lg:grid-cols-[1fr_296px]">
+        {/* On mobile: right panel widgets appear ABOVE job list; on lg+: side by side */}
+        <div className="flex flex-col gap-8 lg:grid lg:grid-cols-[1fr_296px]">
+          {/* ── Right panel — shown first on mobile (above jobs) ── */}
+          <div className="order-first space-y-6 lg:order-last lg:pt-11">
+            {/* Scheduler widget */}
+            <SchedulerWidget stats={stats} loading={statsLoading} />
+
+            {/* Activity timeline */}
+            <div className="rounded-xl2 border border-line bg-surface p-5 dark:border-line-dark dark:bg-surface-dark">
+              <p className="mb-4 font-display text-[14px] font-medium text-ink dark:text-ink-dark">
+                Activity
+              </p>
+              <ActivityTimeline
+                events={activity}
+                loading={activityLoading}
+                error={activityError}
+              />
+            </div>
+
+            {/* Skill Galaxy */}
+            <div>
+              <p className="mb-3 font-display text-[14px] font-medium text-ink dark:text-ink-dark">
+                Skill Galaxy
+              </p>
+              <p className="mb-3 text-[12.5px] text-muted dark:text-muted-dark">
+                Skills matched across your recommendations — larger = more frequent.
+              </p>
+              <SkillGalaxy skills={skills} loading={skillsLoading} />
+            </div>
+
+            {/* Resume Insights */}
+            <ResumeInsightsPanel skills={skills} loading={skillsLoading} />
+          </div>
+
           {/* ── Left: Filters + Job cards ── */}
-          <div>
+          <div className="order-last lg:order-first">
             {/* Filter bar */}
             <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div className="relative w-full max-w-sm">
@@ -554,7 +588,7 @@ export default function DashboardPage() {
 
             {/* Job cards */}
             {jobsLoading ? (
-              <div className="grid gap-4 sm:grid-cols-2">
+              <div className="grid gap-4 md:grid-cols-2">
                 {[...Array(4)].map((_, i) => (
                   <SkeletonJobCard key={i} />
                 ))}
@@ -616,7 +650,7 @@ export default function DashboardPage() {
                 )}
               </div>
             ) : (
-              <div className="grid gap-4 sm:grid-cols-2">
+              <div className="grid gap-4 md:grid-cols-2">
                 {filteredJobs.map((job) => (
                   <JobCard key={job.job_id} job={job} onViewDetails={setSelectedJob} />
                 ))}
@@ -624,37 +658,7 @@ export default function DashboardPage() {
             )}
           </div>
 
-          {/* ── Right panel ── */}
-          <div className="space-y-6 lg:pt-11">
-            {/* Scheduler widget */}
-            <SchedulerWidget stats={stats} loading={statsLoading} />
-
-            {/* Activity timeline */}
-            <div className="rounded-xl2 border border-line bg-surface p-5 dark:border-line-dark dark:bg-surface-dark">
-              <p className="mb-4 font-display text-[14px] font-medium text-ink dark:text-ink-dark">
-                Activity
-              </p>
-              <ActivityTimeline
-                events={activity}
-                loading={activityLoading}
-                error={activityError}
-              />
-            </div>
-
-            {/* Skill Galaxy */}
-            <div>
-              <p className="mb-3 font-display text-[14px] font-medium text-ink dark:text-ink-dark">
-                Skill Galaxy
-              </p>
-              <p className="mb-3 text-[12.5px] text-muted dark:text-muted-dark">
-                Skills matched across your recommendations — larger = more frequent.
-              </p>
-              <SkillGalaxy skills={skills} loading={skillsLoading} />
-            </div>
-
-            {/* Resume Insights */}
-            <ResumeInsightsPanel skills={skills} loading={skillsLoading} />
-          </div>
+          {/* Right panel removed from here — rendered above */}
         </div>
       </div>
 

@@ -102,9 +102,36 @@ export const authApi = {
       false
     ),
 
+  sendOtp: (email: string) =>
+    request<{ message: string }>(
+      "/api/auth/send-otp",
+      { method: "POST", body: JSON.stringify({ email }) },
+      false
+    ),
+
+  resendOtp: (email: string) =>
+    request<{ message: string }>(
+      "/api/auth/resend-otp",
+      { method: "POST", body: JSON.stringify({ email }) },
+      false
+    ),
+
+  verifyOtp: (email: string, otp: string, password: string) =>
+    request<{ access_token: string; token_type: string }>(
+      "/api/auth/verify-otp",
+      { method: "POST", body: JSON.stringify({ email, otp, password }) },
+      false
+    ),
+
   me: () =>
-    request<{ user_id: string; email: string; name: string | null }>(
+    request<{ user_id: string; email: string; name: string | null; email_notifications: boolean }>(
       "/api/auth/me"
+    ),
+
+  setNotifications: (enabled: boolean) =>
+    request<{ email_notifications: boolean }>(
+      "/api/auth/me/notifications",
+      { method: "PATCH", body: JSON.stringify({ enabled }) }
     ),
 };
 

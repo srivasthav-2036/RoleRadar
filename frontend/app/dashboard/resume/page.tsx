@@ -413,7 +413,7 @@ export default function ResumePage() {
         <PipelineStatusBanner onComplete={fetchResume} />
         {/* Header */}
         <div className="mb-8">
-          <div className="flex items-center gap-2.5">
+          <div className="flex items-center gap-2.5 pl-10 md:pl-0">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-line bg-surface dark:border-line-dark dark:bg-surface-dark">
               <FileText className="h-4 w-4 text-muted dark:text-muted-dark" />
             </div>

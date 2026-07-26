@@ -45,8 +45,8 @@ def create_user(email: str, password: str) -> str:
 
         conn.execute(
             text("""
-                INSERT INTO users (user_id, email, password_hash)
-                VALUES (:user_id, :email, :password_hash)
+                INSERT INTO users (user_id, email, password_hash, email_notifications)
+                VALUES (:user_id, :email, :password_hash, 1)
             """),
             {
                 "user_id": user_id,
@@ -96,3 +96,54 @@ def get_user_email(user_id: str) -> str | None:
         ).fetchone()
 
     return row.email if row else None
+
+
+def email_exists(email: str) -> bool:
+    """
+    Fast existence check: returns True if the email is already registered.
+    Used by the OTP send step to reject duplicate registrations before
+    generating or sending a code.
+    """
+    normalized_email = email.strip().lower()
+    with engine.connect() as conn:
+        row = conn.execute(
+            text("SELECT 1 FROM users WHERE email = :email LIMIT 1"),
+            {"email": normalized_email},
+        ).fetchone()
+    return row is not None
+
+
+def get_notification_preference(user_id: str) -> bool:
+    """
+    Returns True if the user has email notifications enabled (default),
+    False if they have opted out. Returns True (safe default) if the
+    user row is not found.
+    """
+    with engine.connect() as conn:
+        row = conn.execute(
+            text("SELECT email_notifications FROM users WHERE user_id = :user_id"),
+            {"user_id": user_id},
+        ).fetchone()
+
+    if row is None:
+        return True  # default: enabled
+
+    # email_notifications is TINYINT(1): 1 = enabled, 0 = disabled
+    return bool(row.email_notifications)
+
+
+def set_notification_preference(user_id: str, enabled: bool) -> None:
+    """
+    Persists the user's email notification preference to the database.
+    enabled=True  → email_notifications=1
+    enabled=False → email_notifications=0
+    """
+    with engine.begin() as conn:
+        conn.execute(
+            text("""
+                UPDATE users
+                SET email_notifications = :val
+                WHERE user_id = :user_id
+            """),
+            {"val": 1 if enabled else 0, "user_id": user_id},
+        )
