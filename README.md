@@ -8,7 +8,7 @@
 
 ## What does it do?
 
-1. **You upload your resume** — RoleRadar reads and understands it using AI.
+1. **You upload your resume** — RoleRadar reads and understands it.
 2. **It fetches fresh job listings** — every 4 hours, it pulls new jobs from multiple providers.
 3. **It matches jobs to your resume** — using vector search + AI scoring to find the best fits.
 4. **It emails you the top matches** — so you don't have to check back manually.
@@ -267,7 +267,7 @@ Interactive API docs are available at http://localhost:8000/docs when running lo
 
 ## License
 
-This project is for personal/educational use.
+This project is licensed under the [MIT License](LICENSE). You are free to use, modify, and distribute this software, subject to the license terms.
 
 ---
 
